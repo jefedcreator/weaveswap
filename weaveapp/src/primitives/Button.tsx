@@ -28,8 +28,6 @@ const Button = ({
   isHome,
   ...rest
 }: ButtonProps) => {
-  console.log("Button isHome", isHome);
-
   return (
     <button
       className={twMerge(

@@ -1734,12 +1734,7 @@ const poolTrackerAbi = [
     inputs: [
       {
         internalType: "address",
-        name: "_poolTracker",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_ethPriceFeed",
+        name: "_yieldCalculator",
         type: "address",
       },
     ],
@@ -1747,6 +1742,36 @@ const poolTrackerAbi = [
     type: "constructor",
   },
   {
+    inputs: [],
+    name: "PoolTracker_pairAlreadyExists",
+    type: "error",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "contract LiquidityPool",
+        name: "pool",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "assetOne",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "assetTwo",
+        type: "address",
+      },
+    ],
+    name: "poolCreated",
+    type: "event",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -1755,16 +1780,75 @@ const poolTrackerAbi = [
       },
       {
         internalType: "address",
-        name: "tokenAddress2",
+        name: "priceFeed",
         type: "address",
       },
     ],
-    name: "dailyRate",
-    outputs: [
+    name: "addRoutingAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_assetOneAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_assetTwoAddress",
+        type: "address",
+      },
       {
         internalType: "uint256",
-        name: "",
+        name: "amountOne",
         type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "amountTwo",
+        type: "uint256",
+      },
+    ],
+    name: "createPool",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "destinationChain",
+    outputs: [
+      {
+        internalType: "uint16",
+        name: "",
+        type: "uint16",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "token1",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "token2",
+        type: "address",
+      },
+    ],
+    name: "exists",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -1777,13 +1861,27 @@ const poolTrackerAbi = [
         name: "tokenAddress",
         type: "address",
       },
+    ],
+    name: "getPoolPairs",
+    outputs: [
+      {
+        internalType: "address[]",
+        name: "",
+        type: "address[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
       {
         internalType: "address",
-        name: "tokenAddress2",
+        name: "tokenAddress",
         type: "address",
       },
     ],
-    name: "dailyRoi",
+    name: "getPoolPairsLength",
     outputs: [
       {
         internalType: "uint256",
@@ -1796,79 +1894,12 @@ const poolTrackerAbi = [
   },
   {
     inputs: [],
-    name: "ethPriceFeed",
+    name: "getPools",
     outputs: [
       {
-        internalType: "address",
+        internalType: "address[]",
         name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "tokenAddress",
-        type: "address",
-      },
-    ],
-    name: "marketCap",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "tokenAddress",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "tokenAddress2",
-        type: "address",
-      },
-    ],
-    name: "pairMarketCap",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "tokenAddress",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "tokenAddress2",
-        type: "address",
-      },
-    ],
-    name: "pairTvl",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
+        type: "address[]",
       },
     ],
     stateMutability: "view",
@@ -1876,31 +1907,7 @@ const poolTrackerAbi = [
   },
   {
     inputs: [],
-    name: "poolTracker",
-    outputs: [
-      {
-        internalType: "contract PoolTracker",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "tokenAddress",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "tokenAddress2",
-        type: "address",
-      },
-    ],
-    name: "totalRoi",
+    name: "getRoutingAddressesLength",
     outputs: [
       {
         internalType: "uint256",
@@ -1915,16 +1922,21 @@ const poolTrackerAbi = [
     inputs: [
       {
         internalType: "address",
-        name: "tokenAddress",
+        name: "",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "",
         type: "address",
       },
     ],
-    name: "tvl",
+    name: "pairToPool",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "contract LiquidityPool",
         name: "",
-        type: "uint256",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -1934,16 +1946,21 @@ const poolTrackerAbi = [
     inputs: [
       {
         internalType: "address",
-        name: "tokenAddress",
+        name: "",
         type: "address",
       },
-    ],
-    name: "tvlRatio",
-    outputs: [
       {
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    name: "poolPairs",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -1952,22 +1969,106 @@ const poolTrackerAbi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "pools",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "routingAddresses",
+    outputs: [
+      {
         internalType: "address",
         name: "tokenAddress",
         type: "address",
       },
       {
-        internalType: "uint256",
-        name: "tokenAmount",
-        type: "uint256",
+        internalType: "address",
+        name: "priceFeed",
+        type: "address",
       },
     ],
-    name: "usdValue",
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "tokenList",
     outputs: [
+      {
+        internalType: "address[]",
+        name: "",
+        type: "address[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
       {
         internalType: "uint256",
         name: "",
         type: "uint256",
+      },
+    ],
+    name: "tokens",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "withdrawEther",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "yieldCalculator",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "zkBridge",
+    outputs: [
+      {
+        internalType: "contract IZKBridge",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",

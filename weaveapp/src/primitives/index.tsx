@@ -1,8 +1,6 @@
-import { Button } from "./Button";
-import { Icon } from "./Icon";
-import { Input } from "./Input";
-import Modal from "./Modal";
-import { Select } from "./Select";
-
-export { Button, Icon, Input, Modal, Select };
-
+export * from "./Button";
+export * from "./Icon";
+export * from "./Input";
+export * from "./Modal";
+export * from "./Select";
+export * from "./Reveal";

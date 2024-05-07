@@ -15,7 +15,7 @@ const tokenA = "0x1F06aB1B322AcF25D52f9210c227692B8Bfac58F";
 const tokenB = "0xFcf351591C7A9D081D5b9c37Bbec3062EE03E235";
 const tokenC = "0x18c9504c02d97D41d518f6bF91faa9A8Fe8071D1";
 const swap = "0x3dfBF4C76f99Cc64BF69BAd9ed27DF567d488956";
-const poolTracker = "0xCFa1b4381C4C62cf4B92e955dB1AEDA04bf55F81";
+const poolTracker = "0x603D1517726A1b3A4BFA097eaBdB8A2d9F633Cf1";
 
 const assetName = ["Token A", "Token B", "Token C"] as const;
 type AssetName = (typeof assetName)[number];

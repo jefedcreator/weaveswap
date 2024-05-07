@@ -265,6 +265,15 @@ const columns: ColumnDef<Pool>[] = [
           args: [tokenTwo.address, tokenTwo.value],
         });
 
+      const { data: poolPairs, refetch: refetchPoolPairs } = useReadContract({
+        abi: poolTrackerAbi,
+        address: poolTracker as `0x${string}`,
+        functionName: "getPoolPairs",
+        args: [tokenTwo.address],
+      });
+
+     
+
       const { data: hash, isPending, writeContractAsync } = useWriteContract();
 
       const {
@@ -350,7 +359,7 @@ const columns: ColumnDef<Pool>[] = [
           // if (isConfirmed) {
           // }
         } catch (error) {
-          console.error(error)
+          console.error(error);
           toast.error("An error occured");
         }
       };
@@ -368,7 +377,7 @@ const columns: ColumnDef<Pool>[] = [
           // if (isConfirmed) {
           // }
         } catch (error) {
-          console.error(error)
+          console.error(error);
           toast.error("An error occured");
         }
       };
@@ -408,6 +417,9 @@ const columns: ColumnDef<Pool>[] = [
           handleCreatePool();
         }
       }, [isSecondTokenSuccess]);
+
+      console.log("poolPairs", poolPairs);
+  
 
       return (
         <Modal>
@@ -611,6 +623,13 @@ const columns: ColumnDef<Pool>[] = [
 ];
 
 const Page = () => {
+  const { data: poolAddresses, refetch: refetchPools } = useReadContract({
+    abi: poolTrackerAbi,
+    address: poolTracker as `0x${string}`,
+    functionName: "pools",
+  });
+  console.log("poolAddresses:", poolAddresses);
+
   return (
     <main className="flex min-h-screen flex-col gap-3 bg-black p-10">
       <Header />

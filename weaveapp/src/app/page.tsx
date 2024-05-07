@@ -9,6 +9,8 @@ import { usePathname } from "next/navigation";
 import { Header } from "@/components";
 import Image from "next/image";
 import { FaXTwitter, FaLinkedin, FaDiscord, FaTelegram } from "react-icons/fa6";
+import Reveal from "@/primitives/Reveal";
+import AnimatedText from "@/primitives/AnimatedText";
 
 const features = [
   {
@@ -37,12 +39,15 @@ export default function HomePage() {
   return (
     <main className="flex flex-col items-center font-khand text-white">
       <div className="w-full">
-        <div className="bg-background1 flex h-screen flex-col justify-between bg-cover bg-center  bg-no-repeat p-10">
+        <div className="flex h-screen flex-col justify-between bg-background1 bg-cover bg-center  bg-no-repeat p-10">
           <Header />
           <div className="flex  w-2/3 flex-col items-center justify-center gap-5 self-center text-center">
-            <h1 className="font-kavoon text-3xl font-medium text-[#FCFFFE]">
-              Your One-Stop Access to Dencentralised Asset Swapping
-            </h1>
+            <AnimatedText
+              text={"Your One-Stop Access to Dencentralised Asset Swapping"}
+              el="h1"
+              once
+              className="font-kavoon text-3xl font-medium text-[#FCFFFE]"
+            />
             <p className="font-hubotsans_regular text-xl font-medium text-[#8E8E8E]">
               Welcome to waveswap where blockchain meet simplicity, seamlessly
               exchange assets across different chains with cofidence and ease
@@ -55,7 +60,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between justify-self-end rounded-md border-[0.5px] border-[#878787] p-8">
             {features.map((feature) => {
               return (
-                <span className="font-hubotsans_regular flex flex-col items-center justify-center text-center font-semibold text-white">
+                <span className="flex flex-col items-center justify-center text-center font-hubotsans_regular font-semibold text-white">
                   {feature.icon}
                   <p className="text-lg">{feature.title}</p>
                   <p className="text-sm">{feature.subTitle}</p>
@@ -64,65 +69,74 @@ export default function HomePage() {
             })}
           </div>
         </div>
-        <div className="font-hubotsans_regular flex flex-col items-center justify-center gap-5 bg-[#030C1A] p-10 text-center">
-          <h2 className="text-2xl font-bold text-white">
-            Cross- Chain compatibility
-          </h2>
-          <p className="w-2/3 text-[#8E8E8E]">
-            Unlock the potential of diverse blockchain networks waveswap enables
-            you to effortlessly conduct transactions across different chains
-            expanding your possibility
-          </p>
-          <div className="flex items-center gap-5">
-            <Image
-              src={"/Ethereum3D.svg"}
-              alt="Ethereum3D"
-              height={72}
-              width={72}
-            />
-            <Image
-              src={"/Avalanche3D.svg"}
-              alt="Avalanche3D"
-              height={72}
-              width={72}
-            />
-            <Image
-              src={"/Cosmos3D.svg"}
-              alt="Cosmos3D"
-              height={72}
-              width={72}
-            />
-            <Image
-              src={"/Polygon3D.svg"}
-              alt="Polygon3D"
-              height={72}
-              width={72}
-            />
-            <Image
-              src={"/Solana3D.svg"}
-              alt="Solana3D"
-              height={72}
-              width={72}
-            />
-            <Image
-              src={"/USDCoin3D.svg"}
-              alt="USDCoin3D"
-              height={72}
-              width={72}
-            />
-          </div>
+        <div className="bg-[#030C1A] font-hubotsans_regular">
+          <Reveal
+            className="flex flex-col items-center justify-center gap-5 p-10 text-center"
+            delay={1.2}
+            duration={0.6}
+          >
+            <h2 className="text-2xl font-bold text-white">
+              Cross- Chain compatibility
+            </h2>
+            <p className="w-2/3 text-[#8E8E8E]">
+              Unlock the potential of diverse blockchain networks waveswap
+              enables you to effortlessly conduct transactions across different
+              chains expanding your possibility
+            </p>
+            <div className="flex items-center gap-5">
+              <Image
+                src={"/Ethereum3D.svg"}
+                alt="Ethereum3D"
+                height={72}
+                width={72}
+              />
+              <Image
+                src={"/Avalanche3D.svg"}
+                alt="Avalanche3D"
+                height={72}
+                width={72}
+              />
+              <Image
+                src={"/Cosmos3D.svg"}
+                alt="Cosmos3D"
+                height={72}
+                width={72}
+              />
+              <Image
+                src={"/Polygon3D.svg"}
+                alt="Polygon3D"
+                height={72}
+                width={72}
+              />
+              <Image
+                src={"/Solana3D.svg"}
+                alt="Solana3D"
+                height={72}
+                width={72}
+              />
+              <Image
+                src={"/USDCoin3D.svg"}
+                alt="USDCoin3D"
+                height={72}
+                width={72}
+              />
+            </div>
+          </Reveal>
         </div>
-        <div className="font-hubotsans_regular flex flex-col items-center justify-center gap-5 bg-[#030C1A] p-10 text-center text-white">
+        <div className="flex flex-col items-center justify-center gap-5 bg-[#030C1A] p-10 text-center font-hubotsans_regular text-white">
           <h2 className="text-3xl font-bold">What we offer</h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col justify-center gap-4 text-left">
+            <Reveal
+              className="flex flex-col justify-center gap-4 text-left"
+              delay={1}
+            >
               <h2 className="text-xl font-bold">Autonomous trading platform</h2>
               <p className="text-lg font-medium text-[#8E8E8E]">
                 Eliminate the need for traditional intermediaries and trade any
                 crypto asset with ease
               </p>
-            </div>
-            <div className="flex w-full items-center justify-end">
+            </Reveal>
+            <Reveal className="flex w-full items-center justify-end" delay={1}>
               <Image
                 src={"/swap.png"}
                 alt="swap"
@@ -131,8 +145,11 @@ export default function HomePage() {
                 sizes="100vw"
                 style={{ width: "50%", height: "auto" }}
               />
-            </div>
-            <div className="flex w-full items-center justify-start">
+            </Reveal>
+            <Reveal
+              className="flex w-full items-center justify-start"
+              delay={1.2}
+            >
               <Image
                 src={"/pool.png"}
                 alt="swap"
@@ -141,15 +158,21 @@ export default function HomePage() {
                 sizes="100vw"
                 style={{ width: "50%", height: "auto" }}
               />
-            </div>
-            <div className="flex flex-col justify-center gap-4 text-left">
+            </Reveal>
+            <Reveal
+              className="flex flex-col justify-center gap-4 text-left"
+              delay={1.2}
+            >
               <h2 className="text-xl font-bold">Liquidity provider</h2>
               <p className="text-lg font-medium text-[#8E8E8E]">
                 Earn passive income by putting your funds to work by providing
                 to a launchpad liquidity.
               </p>
-            </div>
-            <div className="flex flex-col justify-center gap-4 text-left">
+            </Reveal>
+            <Reveal
+              className="flex flex-col justify-center gap-4 text-left"
+              delay={1.4}
+            >
               <h2 className="text-xl font-bold">
                 Decentralized lending Protocol
               </h2>
@@ -157,8 +180,11 @@ export default function HomePage() {
                 Without the need of intermediaries such as banks or financial
                 institutions, lend and borrow crypto assets.
               </p>
-            </div>
-            <div className="flex w-full items-center justify-end">
+            </Reveal>
+            <Reveal
+              className="flex w-full items-center justify-end"
+              delay={1.4}
+            >
               <Image
                 src={"/lend.png"}
                 alt="swap"
@@ -167,11 +193,15 @@ export default function HomePage() {
                 sizes="100vw"
                 style={{ width: "50%", height: "auto" }}
               />
-            </div>
+            </Reveal>
           </div>
         </div>
-        <div className="font-hubotsans_regular flex h-[50vh] flex-col items-center justify-center gap-5 bg-[#030C1A] p-10 text-center text-white">
-          <div className="flex w-2/3 flex-col items-center justify-center gap-5 self-center text-center">
+        <div className="flex h-[50vh] flex-col items-center justify-center gap-5 bg-[#030C1A] p-10 text-center font-hubotsans_regular text-white">
+          <Reveal
+            duration={0.8}
+            delay={1.6}
+            className="flex w-2/3 flex-col items-center justify-center gap-5 self-center text-center"
+          >
             <h1 className="text-3xl font-bold text-[#FCFFFE]">
               Get on our token list
             </h1>
@@ -186,9 +216,9 @@ export default function HomePage() {
               <span>Apply now</span>
               <FaArrowCircleRight />
             </Button>
-          </div>
+          </Reveal>
         </div>
-        <footer className="font-hubotsans_regular flex  items-center justify-around gap-5 bg-[#030C1A] p-10 text-center text-white">
+        <footer className="flex items-center  justify-around gap-5 bg-[#030C1A] p-10 text-center font-hubotsans_regular text-white">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
               <Icon name="weavelogo" />
