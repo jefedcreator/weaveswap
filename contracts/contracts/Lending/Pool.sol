@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 
 // OpenZeppelin's ERC20 interface for interactions with ERC20 tokens.
 import "@openzeppelin/contracts/interfaces/IERC20.sol";
+import "hardhat/console.sol";
 
 // Custom errors for specific failure conditions.
 error lending_outOfReserve();

@@ -8,6 +8,7 @@ import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.so
 import "./Pool.sol";
 import "../Dex/WeaveSwap.sol";
 import "./LendingTracker.sol";
+import "hardhat/console.sol";
 
 error BorrowingTracker_AmountOfCollateralTokenTooLow();
 error BorrowingTracker_AmountTooHigh();

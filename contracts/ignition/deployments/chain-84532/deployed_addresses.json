@@ -1,0 +1,7 @@
+{
+  "lendingTracker#LendingTracker": "0xeC3a32E20DA8431B257812A882A71b1abB7D9dF9",
+  "yieldCalculator#YieldCalculator": "0x35665819bd1695dB59585fa45FE2412339d35151",
+  "poolTracker#PoolTracker": "0x640bA0BEC6A905987AbcaD5bF4E6A7a40Bc127C2",
+  "swapRouter#SwapRouter": "0x65c45383Bd0eeD38255A659B5fB15a21d48B605D",
+  "BorrowingTracker#BorrowingTracker": "0x2bE6C4B26f76c80969958687A8311467290Da377"
+}

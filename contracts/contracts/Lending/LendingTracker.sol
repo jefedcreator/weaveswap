@@ -259,4 +259,20 @@ contract LendingTracker {
     ) external view returns (address[] memory) {
         return userLendedTokens[user];
     }
+
+    function getTokenPrice(
+        address _tokenAddress
+    ) external view returns (int) {
+        address priceAddress = address(tokenToPool[_tokenAddress].priceAddress);
+        console.log(priceAddress);
+          if ( priceAddress == address(0)) {
+            revert lendingTracker_poolNotAvailable();
+        }
+        (, int answer, , , ) = AggregatorV3Interface(priceAddress)
+            .latestRoundData();
+        return answer;
+    }
+
+
+
 }
