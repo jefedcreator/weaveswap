@@ -1,16 +1,12 @@
-"use client";
-import { Button, Icon } from "@/primitives";
-import { FaArrowCircleRight } from "react-icons/fa";
-import { IoShieldCheckmarkOutline } from "react-icons/io5";
-import { BsLightningCharge } from "react-icons/bs";
-import { HiOutlineSignal } from "react-icons/hi2";
-import { VscTools } from "react-icons/vsc";
-import { usePathname } from "next/navigation";
 import { Header } from "@/components";
+import { AnimatedText, Button, Icon, Reveal } from "@/primitives";
 import Image from "next/image";
-import { FaXTwitter, FaLinkedin, FaDiscord, FaTelegram } from "react-icons/fa6";
-import Reveal from "@/primitives/Reveal";
-import AnimatedText from "@/primitives/AnimatedText";
+import { BsLightningCharge } from "react-icons/bs";
+import { FaArrowCircleRight } from "react-icons/fa";
+import { FaDiscord, FaLinkedin, FaTelegram, FaXTwitter } from "react-icons/fa6";
+import { HiOutlineSignal } from "react-icons/hi2";
+import { IoShieldCheckmarkOutline } from "react-icons/io5";
+import { VscTools } from "react-icons/vsc";
 
 const features = [
   {

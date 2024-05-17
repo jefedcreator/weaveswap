@@ -2,16 +2,14 @@
 import { swap, swapAbi, tokenA, tokenB, tokenC } from "@/constants";
 import { Button, Input, Select } from "@/primitives";
 import Image from "next/image";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FaClockRotateLeft } from "react-icons/fa6";
 import { IoMdArrowDropdown, IoMdSettings } from "react-icons/io";
 import { toast } from "sonner";
 import {
   erc20Abi,
-  parseUnits,
   formatEther,
-  formatUnits,
-  parseEther,
+  parseEther
 } from "viem";
 import {
   useAccount,
@@ -145,6 +143,7 @@ const Swap = () => {
         args: [tokenIn.address, tokenOut.address, inputAmount],
         value: parseEther(fee.toString()),
       });
+    
       // if (isConfirmed) {
       // }
     } catch (error) {

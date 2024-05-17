@@ -19,11 +19,13 @@ import {
   borrowAbi,
   tokenOptions,
   AssetName,
+  Tokens,
 } from "@/constants";
 import {
   useAccount,
   useEstimateFeesPerGas,
   useReadContract,
+  useReadContracts,
   useSimulateContract,
   useWaitForTransactionReceipt,
   useWatchContractEvent,
@@ -50,435 +52,22 @@ type Asset = {
   Action: string;
 };
 
-const columns: ColumnDef<Asset>[] = [
-  {
-    accessorKey: "Name",
-    // header: "Pool",
-    header: () => <div className="text-center">Asset</div>,
-    cell: ({ row }) => {
-      const asset: AssetName = row.getValue("Name");
+const lendContract = {
+  abi: lendAbi,
+  address: lend,
+} as const;
 
-      const TokenIcon = () => {
-        switch (asset) {
-          case "Token A":
-            return (
-              <Image width="20" height="20" src="/blylogo.svg" alt="blylogo" />
-            );
-          case "Token B":
-            return (
-              <Image width="20" height="20" src="/clylogo.svg" alt="clylogo" />
-            );
-          case "Token C":
-            return (
-              <Image width="20" height="20" src="/dotlogo.svg" alt="clylogo" />
-            );
-          default:
-            return null;
-        }
-      };
-
-      return (
-        <div className="flex items-center justify-center gap-1 font-medium">
-          <TokenIcon />
-          <p>{asset}</p>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "Total Supplied",
-    header: "Total Supplied",
-  },
-  {
-    accessorKey: "APY",
-    header: "APY",
-  },
-  {
-    accessorKey: "Wallet Balance",
-    header: "Wallet Balance",
-  },
-  {
-    accessorKey: "Action",
-    header: "Action",
-    cell: ({ row, table }) => {
-      const [inputAmount, setInputAmount] = useState<number | string>(0);
-      const [tokenCollateral, setTokenCollateral] = useState({
-        name: "",
-        address: "",
-        value: 0,
-      });
-      const searchParams = useSearchParams();
-      const { address } = useAccount();
-      const action = (): TabType => {
-        const optionSearchParams = new URLSearchParams(searchParams.toString());
-        const action = optionSearchParams.get("action");
-        return action as TabType;
-      };
-
-      const title = action()[0]?.toUpperCase() + action().slice(1);
-
-      const balance: string = row.getValue("Wallet Balance");
-      const name: string = row.getValue("Name");
-      const token: `0x${string}` = row.original.Address!;
-
-      console.log("token address", token);
-
-      const setMaxAmount = () => {
-        setInputAmount(balance.toString());
-      };
-
-      const { data: hash, isPending, writeContractAsync } = useWriteContract();
-      const {
-        data: approveHash,
-        isPending: isApprovePending,
-        isSuccess: isApproveSuccess,
-        writeContractAsync: writeApproveAsync,
-      } = useWriteContract();
-      const {
-        data: collateralApproveHash,
-        isPending: isCollateralApprovePending,
-        isSuccess: isCollateralApproveSuccess,
-        writeContractAsync: writeCollateralApproveAsync,
-      } = useWriteContract();
-      const {
-        data: stakeCollateralHash,
-        isPending: isStakeCollateralPending,
-        isSuccess: isStakeCollateralSuccess,
-        writeContractAsync: writeStakeCollateralAsync,
-      } = useWriteContract();
-      const {
-        data: borrowHash,
-        isPending: isBorrowPending,
-        isSuccess: isBorrowSuccess,
-        writeContractAsync: writeBorrowAsync,
-      } = useWriteContract();
-
-      const { isLoading: isConfirming, isSuccess: isConfirmed } =
-        useWaitForTransactionReceipt({
-          hash,
-        });
-
-      const { isLoading: isApproving, isSuccess: isApproved } =
-        useWaitForTransactionReceipt({
-          hash: approveHash,
-        });
-
-      const {
-        isLoading: isCollateralApproving,
-        isSuccess: isCollateralApproved,
-      } = useWaitForTransactionReceipt({
-        hash: collateralApproveHash,
-      });
-
-      const {
-        isLoading: isCollateralStaking,
-        isSuccess: isCollateralSuccesss,
-      } = useWaitForTransactionReceipt({
-        hash: stakeCollateralHash,
-      });
-
-      const { isLoading: isBorrowLoading, isSuccess: isBorrowSuccesss } =
-        useWaitForTransactionReceipt({
-          hash: borrowHash,
-        });
-
-      const handleLendApprove = async () => {
-        try {
-          await writeApproveAsync({
-            address: token as `0x${string}`,
-            abi: erc20Abi,
-            functionName: "approve",
-            args: [lend as `0x${string}`, parseUnits("100", 10)],
-          });
-          toast.success("Token approved succesfully");
-        } catch (error) {
-          console.error(error);
-          toast.error("An error occured");
-        }
-      };
-
-      const handleCollateralApprove = async () => {
-        try {
-          await writeCollateralApproveAsync({
-            address: tokenCollateral.address as `0x${string}`,
-            abi: erc20Abi,
-            functionName: "approve",
-            args: [borrow as `0x${string}`, parseUnits("100", 10)],
-          });
-          toast.success("Token approved succesfully");
-        } catch (error) {
-          console.error(error);
-          toast.error("An error occured");
-        }
-      };
-
-      const handleSupply = async () => {
-        try {
-          await writeContractAsync({
-            abi: lendAbi,
-            address: lend,
-            functionName: "lendToken",
-            account: address,
-            args: [token, parseEther(inputAmount.toString())],
-          });
-          toast.success("Token supplied succesfully");
-          table.reset();
-        } catch (error) {
-          console.error(error);
-          toast.error("An error occured");
-        }
-      };
-
-      const handleStakeCollateral = async () => {
-        try {
-          await writeStakeCollateralAsync({
-            abi: borrowAbi,
-            address: borrow,
-            functionName: "stakeCollateral",
-            account: address,
-            args: [
-              tokenCollateral.address,
-              parseEther(tokenCollateral.value.toString()),
-            ],
-          });
-          toast.success("Collateral Staked succesfully");
-          // table.reset();
-        } catch (error) {
-          console.error(error);
-          toast.error("An error occured");
-        }
-      };
-
-      const handleBorrow = async () => {
-        try {
-          await writeContractAsync({
-            abi: borrowAbi,
-            address: borrow,
-            functionName: "borrowToken",
-            account: address,
-            args: [token, parseEther(inputAmount.toString())],
-          });
-          toast.success("Token Borrowed succesfully");
-          // table.reset();
-        } catch (error) {
-          console.error(error);
-          toast.error("An error occured");
-        }
-      };
-
-      useEffect(() => {
-        if (isApproved) {
-          handleSupply();
-        }
-      }, [isApproved]);
-
-      useEffect(() => {
-        if (isCollateralApproved) {
-          handleStakeCollateral();
-        }
-      }, [isCollateralApproved]);
-
-      useEffect(() => {
-        if (isCollateralSuccesss) {
-          handleBorrow();
-        }
-      }, [isCollateralSuccesss]);
-
-      return (
-        <Suspense fallback={<>Loading...</>}>
-          <Modal>
-            <Modal.Button asChild>
-              <Button variant="primary">
-                {action() == "supply" ? `Add Supply` : `Borrow`}
-              </Button>
-            </Modal.Button>
-            <Modal.Portal className="backdrop-blur-sm">
-              <Modal.Content className="data-[state=open]:animate-contentShow fixed left-1/2 top-1/2 z-30 flex max-h-[814px] w-full max-w-[30.06rem] -translate-x-1/2 -translate-y-1/2 flex-col gap-10 rounded-[10px] border border-[0.5] border-grey-1 bg-black p-10 px-8 py-10 font-khand text-white shadow focus:outline-none">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold">{title}</h2>
-                </div>
-                <div className="rounded-md bg-grey-1/30 p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1">
-                      <p className="text-sm font-semibold text-grey-1">
-                        {`${name} Asset`}
-                      </p>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <p className="text-sm font-semibold text-grey-1">
-                        Wallet Bal
-                      </p>
-                      <p>{balance}</p>
-                      <Button
-                        variant="primary"
-                        className="h-3.5 w-5"
-                        onClick={setMaxAmount}
-                      >
-                        Max
-                      </Button>
-                    </span>
-                  </div>
-                  <hr />
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1">
-                      <Input
-                        id="valueIn"
-                        type="number"
-                        value={inputAmount}
-                        onChange={(e) => setInputAmount(e.target.value)}
-                      />
-                      <p className="text-sm font-semibold text-grey-1">
-                        ($4602.43)
-                      </p>
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Image
-                        height={20}
-                        width={20}
-                        src="/ethlogo.svg"
-                        alt="ethlogo"
-                      />
-                      <p className="text-2xl">Ethereum</p>
-                      {/* <IoMdArrowDropdown /> */}
-                    </span>
-                  </div>
-                </div>
-                {action() == "borrow" && inputAmount && (
-                  <div className="rounded-md bg-grey-1/30 p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <p className="text-sm font-semibold text-grey-1">
-                          Collateral
-                        </p>
-                        <Select
-                          inputId="token1"
-                          option={tokenOptions.filter(
-                            (tokenOption) => tokenOption.value !== token,
-                          )}
-                          onChange={(option) => {
-                            console.log(option?.value);
-                            setTokenCollateral({
-                              name: option?.label!,
-                              address: option?.value!,
-                              value: 0,
-                            });
-                          }}
-                        />
-                      </span>
-                    </div>
-                    <hr />
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <Input
-                          id="valueIn"
-                          type="number"
-                          value={tokenCollateral.value}
-                          onChange={(e) =>
-                            setTokenCollateral((prev) => {
-                              return {
-                                ...prev,
-                                value: Number(e.target.value),
-                              };
-                            })
-                          }
-                        />
-                        <p className="text-sm font-semibold text-grey-1">
-                          ($4602.43)
-                        </p>
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Image
-                          height={20}
-                          width={20}
-                          src="/ethlogo.svg"
-                          alt="ethlogo"
-                        />
-                        <p className="text-2xl">Ethereum</p>
-                        {/* <IoMdArrowDropdown /> */}
-                      </span>
-                    </div>
-                  </div>
-                )}
-                <div className="flex flex-col gap-2">
-                  <p>Summary</p>
-                  <div>
-                    <span className="flex items-center justify-between">
-                      <p className="text-grey-1">Supply APY</p>
-                      <p>3.23%</p>
-                    </span>
-                    <span className="flex items-center justify-between">
-                      <p className="text-grey-1">Collateral Factor</p>
-                      <p>72.1%</p>
-                    </span>
-                    <span className="flex items-center justify-between">
-                      <p className="text-grey-1">Gas Fee</p>
-                      <p>$20</p>
-                    </span>
-                  </div>
-                </div>
-
-                <Button
-                  className="w-full font-bold"
-                  variant="primary"
-                  disabled={
-                    isApprovePending ||
-                    isPending ||
-                    isConfirming ||
-                    isApproving ||
-                    isBorrowLoading ||
-                    isCollateralStaking ||
-                    isCollateralApproving ||
-                    isBorrowPending ||
-                    isStakeCollateralPending ||
-                    isCollateralApprovePending ||
-                    // (action()=='supply' && (!inputAmount))
-                    (action() == "borrow" &&
-                      (!tokenCollateral.name || !tokenCollateral.value))
-                  }
-                  onClick={
-                    action() == "borrow"
-                      ? handleCollateralApprove
-                      : handleLendApprove
-                  }
-                >
-                  {isCollateralApprovePending
-                    ? "Approving collateral"
-                    : isStakeCollateralPending
-                      ? "Approve stake collateral..."
-                      : isBorrowPending
-                        ? "Confirm borrow..."
-                        : isCollateralApproving
-                          ? "Confirming collateral"
-                          : isCollateralStaking
-                            ? "Staking collateral.."
-                            : isBorrowLoading
-                              ? "Borrowing..."
-                              : isConfirming
-                                ? "Confirming token supplied"
-                                : isApproving
-                                  ? "Confirming Approval..."
-                                  : isPending
-                                    ? "Supply token pending..."
-                                    : isApprovePending
-                                      ? "Aproving token.."
-                                      : title}
-                </Button>
-              </Modal.Content>
-            </Modal.Portal>
-          </Modal>
-        </Suspense>
-      );
-    },
-  },
-];
+// const lendingPoolContract = {
+//   abi: lendingPoolAbi,
+//   address: pooldetail?.[0] as `0x${string}`,
+// } as const
 
 const Lend = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const { address } = useAccount();
-  const [isLendOrBorrow, setIsLendOrBorrow] = useState(false);
-  const [key, setKey] = useState(0);
+
   const action = (): TabType => {
     const optionSearchParams = new URLSearchParams(searchParams.toString());
     const action = optionSearchParams.get("action");
@@ -491,6 +80,20 @@ const Lend = () => {
     const optionUrl = createUrl(pathname, optionSearchParams);
     router.replace(optionUrl, { scroll: false });
   };
+
+  const result = useReadContracts({
+    contracts: [
+      {
+        ...lendContract,
+        functionName: "allAvailableTokens",
+      },
+      {
+        ...lendContract,
+        functionName: "tokenToPool",
+        args: [tokenA],
+      },
+    ],
+  });
 
   const { data: availableTokens, isLoading } = useReadContract({
     abi: lendAbi,
@@ -515,6 +118,8 @@ const Lend = () => {
     functionName: "borrowingAPY",
     account: address,
   });
+
+  console.log("borrowingAPY", borrowingAPY);
 
   const {
     data: tokenABalance,
@@ -549,17 +154,104 @@ const Lend = () => {
     args: [address as `0x${string}`],
   });
 
+  const {
+    data: tokenAAllowance,
+    // isLoading: isTokenCLoading,
+  } = useReadContract({
+    address: tokenA as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [address as `0x${string}`, lend],
+  });
+
+  const {
+    data: tokenABorrowAllowance,
+    // isLoading: isTokenCLoading,
+  } = useReadContract({
+    address: tokenA as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [address as `0x${string}`, borrow],
+  });
+
+  const {
+    data: tokenBAllowance,
+    // isLoading: isTokenCLoading,
+  } = useReadContract({
+    address: tokenB as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [address as `0x${string}`, lend],
+  });
+
+  const {
+    data: tokenBBorrowAllowance,
+    // isLoading: isTokenCLoading,
+  } = useReadContract({
+    address: tokenB as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [address as `0x${string}`, borrow],
+  });
+
+  const {
+    data: tokenCAllowance,
+    // isLoading: isTokenCLoading,
+  } = useReadContract({
+    address: tokenC as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [address as `0x${string}`, lend],
+  });
+
+  const {
+    data: tokenCBorrowAllowance,
+    // isLoading: isTokenCLoading,
+  } = useReadContract({
+    address: tokenC as `0x${string}`,
+    abi: erc20Abi,
+    functionName: "allowance",
+    args: [address as `0x${string}`, borrow],
+  });
+
+  console.log("tokenCAllowance", formatEther(BigInt(tokenCAllowance || 0)));
+  console.log("tokenBAllowance", formatEther(BigInt(tokenBAllowance || 0)));
+  console.log("tokenAAllowance", formatEther(BigInt(tokenAAllowance || 0)));
+
+  const getAllowance = (token: Tokens) => {
+    let tokenAllowances = {
+      [tokenA]: formatEther(BigInt(tokenAAllowance || 0)),
+      [tokenB]: formatEther(BigInt(tokenBAllowance || 0)),
+      [tokenC]: formatEther(BigInt(tokenCAllowance || 0)),
+    };
+
+    return tokenAllowances[token] || "0";
+  };
+
+  const getBorrowAllowance = (token: Tokens) => {
+    let tokenAllowances = {
+      [tokenA]: formatEther(BigInt(tokenABorrowAllowance || 0)),
+      [tokenB]: formatEther(BigInt(tokenBBorrowAllowance || 0)),
+      [tokenC]: formatEther(BigInt(tokenCBorrowAllowance || 0)),
+    };
+
+    return tokenAllowances[token] || "0";
+  };
+
+  const refetchBalances = () => {
+    refetchTokenA();
+    refetchTokenB();
+    refetchTokenC();
+  };
+
   useWatchContractEvent({
     address: lend,
     abi: lendAbi,
     eventName: "userLended",
     onLogs(logs) {
       console.log("User Lended!", logs);
-      setIsLendOrBorrow(true);
-      setKey((prevKey) => prevKey + 1);
-      refetchTokenA();
-      refetchTokenB();
-      refetchTokenC();
+      refetchBalances();
+      handleIsModal();
     },
   });
 
@@ -569,15 +261,17 @@ const Lend = () => {
     eventName: "userBorrowed",
     onLogs(logs) {
       console.log("User Borrowed!", logs);
-      setIsLendOrBorrow(true);
-      setKey((prevKey) => prevKey + 1);
+      refetchBalances();
+      handleIsModal();
     },
   });
 
   console.log("Pooldetail", Pooldetail);
   // console.log("borrowingAPY", borrowingAPY.toString());
+  console.log("availableTokens", availableTokens);
 
   const assets: Asset[] = useMemo(() => {
+    if (!availableTokens) return [];
     return (availableTokens as string[])?.map((availableToken) => {
       let tokenInfo: Asset = {
         Name: null,
@@ -626,7 +320,485 @@ const Lend = () => {
 
   console.log("availableTokens", assets);
 
-  useEffect(() => {}, [isLendOrBorrow, key]);
+  useEffect(() => {
+    console.log("balance changed");
+  }, [tokenABalance, tokenBBalance, tokenCBalance]);
+
+  const columns: ColumnDef<Asset>[] = [
+    {
+      accessorKey: "Name",
+      // header: "Pool",
+      header: () => <div className="text-center">Asset</div>,
+      cell: ({ row }) => {
+        const asset: AssetName = row.getValue("Name");
+
+        const TokenIcon = () => {
+          switch (asset) {
+            case "Token A":
+              return (
+                <Image
+                  width="20"
+                  height="20"
+                  src="/blylogo.svg"
+                  alt="blylogo"
+                />
+              );
+            case "Token B":
+              return (
+                <Image
+                  width="20"
+                  height="20"
+                  src="/clylogo.svg"
+                  alt="clylogo"
+                />
+              );
+            case "Token C":
+              return (
+                <Image
+                  width="20"
+                  height="20"
+                  src="/dotlogo.svg"
+                  alt="clylogo"
+                />
+              );
+            default:
+              return null;
+          }
+        };
+
+        return (
+          <div className="flex items-center justify-center gap-1 font-medium">
+            <TokenIcon />
+            <p>{asset}</p>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "Total Supplied",
+      header: "Total Supplied",
+    },
+    {
+      accessorKey: "APY",
+      header: "APY",
+    },
+    {
+      accessorKey: "Wallet Balance",
+      header: "Wallet Balance",
+    },
+    {
+      accessorKey: "Action",
+      header: "Action",
+      enableHiding: false,
+
+      cell: ({ row }) => {
+        const [isModalOpen, setIsModalOpen] = useState(false);
+
+        const handleIsModal = () => {
+          setIsModalOpen((prev) => !prev);
+        };
+
+        const [inputAmount, setInputAmount] = useState<number | string>(0);
+        const [tokenCollateral, setTokenCollateral] = useState({
+          name: "",
+          address: "",
+          value: 0,
+        });
+        const searchParams = useSearchParams();
+        const { address } = useAccount();
+        const action = (): TabType => {
+          const optionSearchParams = new URLSearchParams(
+            searchParams.toString(),
+          );
+          const action = optionSearchParams.get("action");
+          return action as TabType;
+        };
+
+        const title = action()[0]?.toUpperCase() + action().slice(1);
+
+        const balance: string = row.getValue("Wallet Balance");
+        const name: string = row.getValue("Name");
+        const token: `0x${string}` = row.original.Address!;
+
+        const setMaxAmount = () => {
+          setInputAmount(balance.toString());
+        };
+
+        const {
+          data: hash,
+          isPending,
+          writeContractAsync,
+        } = useWriteContract();
+
+        const {
+          data: approveHash,
+          isPending: isApprovePending,
+          isSuccess: isApproveSuccess,
+          writeContractAsync: writeApproveAsync,
+        } = useWriteContract();
+
+        const {
+          data: collateralApproveHash,
+          isPending: isCollateralApprovePending,
+          isSuccess: isCollateralApproveSuccess,
+          writeContractAsync: writeCollateralApproveAsync,
+        } = useWriteContract();
+        const {
+          data: stakeCollateralHash,
+          isPending: isStakeCollateralPending,
+          isSuccess: isStakeCollateralSuccess,
+          writeContractAsync: writeStakeCollateralAsync,
+        } = useWriteContract();
+        const {
+          data: borrowHash,
+          isPending: isBorrowPending,
+          isSuccess: isBorrowSuccess,
+          writeContractAsync: writeBorrowAsync,
+        } = useWriteContract();
+
+        const { isLoading: isConfirming, isSuccess: isConfirmed } =
+          useWaitForTransactionReceipt({
+            hash,
+          });
+
+        const { isLoading: isApproving, isSuccess: isApproved } =
+          useWaitForTransactionReceipt({
+            hash: approveHash,
+          });
+
+        const {
+          isLoading: isCollateralApproving,
+          isSuccess: isCollateralApproved,
+        } = useWaitForTransactionReceipt({
+          hash: collateralApproveHash,
+        });
+
+        const {
+          isLoading: isCollateralStaking,
+          isSuccess: isCollateralSuccesss,
+        } = useWaitForTransactionReceipt({
+          hash: stakeCollateralHash,
+        });
+
+        const { isLoading: isBorrowLoading, isSuccess: isBorrowSuccesss } =
+          useWaitForTransactionReceipt({
+            hash: borrowHash,
+          });
+
+        const handleLendApprove = async () => {
+          try {
+            await writeApproveAsync({
+              address: token as `0x${string}`,
+              abi: erc20Abi,
+              functionName: "approve",
+              args: [lend as `0x${string}`, parseUnits("100", 10)],
+            });
+            toast.success("Token approved succesfully");
+          } catch (error) {
+            console.error(error);
+            toast.error("An error occured");
+          }
+        };
+
+        const handleClick = () => {
+          if (action() === "borrow") {
+            const allowance = getBorrowAllowance(
+              tokenCollateral.address as Tokens,
+            );
+            console.log("allowance", allowance);
+
+            if (
+              parseFloat(allowance) <
+              parseFloat(tokenCollateral.value.toString())
+            ) {
+              handleCollateralApprove();
+            } else {
+              handleStakeCollateral();
+            }
+          } else {
+            const allowance = getAllowance(token as Tokens);
+            if (parseFloat(allowance) < parseFloat(inputAmount.toString())) {
+              handleLendApprove();
+            } else {
+              handleSupply();
+            }
+          }
+        };
+
+        const handleCollateralApprove = async () => {
+          try {
+            await writeCollateralApproveAsync({
+              address: tokenCollateral.address as `0x${string}`,
+              abi: erc20Abi,
+              functionName: "approve",
+              args: [borrow as `0x${string}`, parseUnits("100", 10)],
+            });
+            toast.success("Token approved succesfully");
+          } catch (error) {
+            console.error(error);
+            toast.error("An error occured");
+          }
+        };
+
+        const handleSupply = async () => {
+          try {
+            await writeContractAsync({
+              abi: lendAbi,
+              address: lend,
+              functionName: "lendToken",
+              account: address,
+              args: [token, parseEther(inputAmount.toString())],
+            });
+            toast.success("Token supplied succesfully");
+            handleIsModal();
+            refetchBalances();
+          } catch (error) {
+            console.error(error);
+            toast.error("An error occured");
+          }
+        };
+
+        const handleStakeCollateral = async () => {
+          try {
+            await writeStakeCollateralAsync({
+              abi: borrowAbi,
+              address: borrow,
+              functionName: "stakeCollateral",
+              account: address,
+              args: [
+                tokenCollateral.address,
+                parseEther(tokenCollateral.value.toString()),
+              ],
+            });
+            toast.success("Collateral Staked succesfully");
+          } catch (error) {
+            console.error(error);
+            toast.error("An error occured");
+          }
+        };
+
+        const handleBorrow = async () => {
+          try {
+            await writeContractAsync({
+              abi: borrowAbi,
+              address: borrow,
+              functionName: "borrowToken",
+              account: address,
+              args: [token, parseEther(inputAmount.toString())],
+            });
+            toast.success("Token Borrowed succesfully");
+            handleIsModal();
+            refetchBalances();
+          } catch (error) {
+            console.error(error);
+            toast.error("An error occured");
+          }
+        };
+
+        useEffect(() => {
+          console.log("isApproved", isApproved);
+          if (isApproved) {
+            handleSupply();
+          }
+        }, [isApproved]);
+
+        useEffect(() => {
+          if (isCollateralApproved) {
+            console.log("isCollateralApproved", isCollateralApproved);
+            handleStakeCollateral();
+          }
+        }, [isCollateralApproved]);
+
+        useEffect(() => {
+          if (isCollateralSuccesss) {
+            console.log("isCollateralSuccesss", isCollateralSuccesss);
+            handleBorrow();
+          }
+        }, [isCollateralSuccesss]);
+
+        return (
+          <Suspense fallback={<>Loading...</>}>
+            <Modal open={isModalOpen} onOpenChange={handleIsModal}>
+              <Modal.Button asChild>
+                <Button variant="primary">
+                  {action() == "supply" ? `Add Supply` : `Borrow`}
+                </Button>
+              </Modal.Button>
+              <Modal.Portal className="backdrop-blur-sm">
+                <Modal.Content className="data-[state=open]:animate-contentShow fixed left-1/2 top-1/2 z-30 flex max-h-[814px] w-full max-w-[30.06rem] -translate-x-1/2 -translate-y-1/2 flex-col gap-10 rounded-[10px] border border-[0.5] border-grey-1 bg-black p-10 px-8 py-10 font-khand text-white shadow focus:outline-none">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-semibold">{title}</h2>
+                  </div>
+                  <div className="rounded-md bg-grey-1/30 p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <p className="text-sm font-semibold text-grey-1">
+                          {`${name} Asset`}
+                        </p>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <p className="text-sm font-semibold text-grey-1">
+                          Wallet Bal
+                        </p>
+                        <p>{balance}</p>
+                        <Button
+                          variant="primary"
+                          className="h-3.5 w-5"
+                          onClick={setMaxAmount}
+                        >
+                          Max
+                        </Button>
+                      </span>
+                    </div>
+                    <hr />
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <Input
+                          id="valueIn"
+                          type="number"
+                          value={inputAmount}
+                          onChange={(e) => setInputAmount(e.target.value)}
+                        />
+                        <p className="text-sm font-semibold text-grey-1">
+                          ($4602.43)
+                        </p>
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Image
+                          height={20}
+                          width={20}
+                          src="/ethlogo.svg"
+                          alt="ethlogo"
+                        />
+                        <p className="text-2xl">Ethereum</p>
+                        {/* <IoMdArrowDropdown /> */}
+                      </span>
+                    </div>
+                  </div>
+                  {action() == "borrow" && inputAmount && (
+                    <div className="rounded-md bg-grey-1/30 p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1">
+                          <p className="text-sm font-semibold text-grey-1">
+                            Collateral
+                          </p>
+                          <Select
+                            inputId="token1"
+                            option={tokenOptions.filter(
+                              (tokenOption) => tokenOption.value !== token,
+                            )}
+                            onChange={(option) => {
+                              console.log(option?.value);
+                              setTokenCollateral({
+                                name: option?.label!,
+                                address: option?.value!,
+                                value: 0,
+                              });
+                            }}
+                          />
+                        </span>
+                      </div>
+                      <hr />
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1">
+                          <Input
+                            id="valueIn"
+                            type="number"
+                            value={tokenCollateral.value}
+                            onChange={(e) =>
+                              setTokenCollateral((prev) => {
+                                return {
+                                  ...prev,
+                                  value: Number(e.target.value),
+                                };
+                              })
+                            }
+                          />
+                          <p className="text-sm font-semibold text-grey-1">
+                            ($4602.43)
+                          </p>
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Image
+                            height={20}
+                            width={20}
+                            src="/ethlogo.svg"
+                            alt="ethlogo"
+                          />
+                          <p className="text-2xl">Ethereum</p>
+                          {/* <IoMdArrowDropdown /> */}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <p>Summary</p>
+                    <div>
+                      <span className="flex items-center justify-between">
+                        <p className="text-grey-1">Supply APY</p>
+                        <p>3.23%</p>
+                      </span>
+                      <span className="flex items-center justify-between">
+                        <p className="text-grey-1">Collateral Factor</p>
+                        <p>72.1%</p>
+                      </span>
+                      <span className="flex items-center justify-between">
+                        <p className="text-grey-1">Gas Fee</p>
+                        <p>$20</p>
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button
+                    className="w-full font-bold"
+                    variant="primary"
+                    disabled={
+                      isApprovePending ||
+                      isPending ||
+                      isConfirming ||
+                      isApproving ||
+                      isBorrowLoading ||
+                      isCollateralStaking ||
+                      isCollateralApproving ||
+                      isBorrowPending ||
+                      isStakeCollateralPending ||
+                      isCollateralApprovePending ||
+                      // (action()=='supply' && (!inputAmount))
+                      (action() == "borrow" &&
+                        (!tokenCollateral.name || !tokenCollateral.value))
+                    }
+                    onClick={handleClick}
+                  >
+                    {isCollateralApprovePending
+                      ? "Approving collateral"
+                      : isStakeCollateralPending
+                        ? "Approve stake collateral..."
+                        : isBorrowPending
+                          ? "Confirm borrow..."
+                          : isCollateralApproving
+                            ? "Confirming collateral"
+                            : isCollateralStaking
+                              ? "Staking collateral.."
+                              : isBorrowLoading
+                                ? "Borrowing..."
+                                : isConfirming
+                                  ? "Confirming token supplied"
+                                  : isApproving
+                                    ? "Confirming Approval..."
+                                    : isPending
+                                      ? "Supply token pending..."
+                                      : isApprovePending
+                                        ? "Aproving token.."
+                                        : title}
+                  </Button>
+                </Modal.Content>
+              </Modal.Portal>
+            </Modal>
+          </Suspense>
+        );
+      },
+    },
+  ];
 
   return (
     <main className="flex min-h-screen flex-col gap-3 bg-black p-10">
@@ -734,3 +906,6 @@ const Page = () => {
 };
 
 export default Page;
+function handleIsModal() {
+  throw new Error("Function not implemented.");
+}

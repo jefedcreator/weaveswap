@@ -1,3 +1,4 @@
+"use client";
 import { WalletConnectButton } from "./ConnectButton";
 import Swap from "./Swap";
 import Header from "./Header";

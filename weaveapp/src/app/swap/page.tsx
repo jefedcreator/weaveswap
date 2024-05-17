@@ -1,4 +1,3 @@
-"use client";
 import { Header, Swap } from "@/components";
 
 const Page = () => {
