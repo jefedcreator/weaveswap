@@ -214,10 +214,6 @@ const Lend = () => {
     args: [address as `0x${string}`, borrow],
   });
 
-  console.log("tokenCAllowance", formatEther(BigInt(tokenCAllowance || 0)));
-  console.log("tokenBAllowance", formatEther(BigInt(tokenBAllowance || 0)));
-  console.log("tokenAAllowance", formatEther(BigInt(tokenAAllowance || 0)));
-
   const getAllowance = (token: Tokens) => {
     let tokenAllowances = {
       [tokenA]: formatEther(BigInt(tokenAAllowance || 0)),
@@ -238,20 +234,19 @@ const Lend = () => {
     return tokenAllowances[token] || "0";
   };
 
-  const refetchBalances = () => {
-    refetchTokenA();
-    refetchTokenB();
-    refetchTokenC();
+  const refetchBalances = async () => {
+    await refetchTokenA();
+    await refetchTokenB();
+    await refetchTokenC();
   };
 
   useWatchContractEvent({
     address: lend,
     abi: lendAbi,
     eventName: "userLended",
-    onLogs(logs) {
+    async onLogs(logs) {
       console.log("User Lended!", logs);
-      refetchBalances();
-      handleIsModal();
+      await refetchBalances();
     },
   });
 
@@ -259,10 +254,9 @@ const Lend = () => {
     address: borrow,
     abi: borrowAbi,
     eventName: "userBorrowed",
-    onLogs(logs) {
+    async onLogs(logs) {
       console.log("User Borrowed!", logs);
-      refetchBalances();
-      handleIsModal();
+      await refetchBalances();
     },
   });
 
@@ -316,13 +310,10 @@ const Lend = () => {
       }
       return tokenInfo;
     });
-  }, [availableTokens, address]);
+  }, [availableTokens, address, tokenABalance, tokenBBalance, tokenCBalance]);
 
   console.log("availableTokens", assets);
 
-  useEffect(() => {
-    console.log("balance changed");
-  }, [tokenABalance, tokenBBalance, tokenCBalance]);
 
   const columns: ColumnDef<Asset>[] = [
     {
@@ -549,9 +540,9 @@ const Lend = () => {
               account: address,
               args: [token, parseEther(inputAmount.toString())],
             });
-            toast.success("Token supplied succesfully");
+            await refetchBalances();
             handleIsModal();
-            refetchBalances();
+            toast.success("Token supplied succesfully");
           } catch (error) {
             console.error(error);
             toast.error("An error occured");
@@ -586,9 +577,9 @@ const Lend = () => {
               account: address,
               args: [token, parseEther(inputAmount.toString())],
             });
-            toast.success("Token Borrowed succesfully");
+            await refetchBalances();
             handleIsModal();
-            refetchBalances();
+            toast.success("Token Borrowed succesfully");
           } catch (error) {
             console.error(error);
             toast.error("An error occured");
@@ -906,6 +897,3 @@ const Page = () => {
 };
 
 export default Page;
-function handleIsModal() {
-  throw new Error("Function not implemented.");
-}
