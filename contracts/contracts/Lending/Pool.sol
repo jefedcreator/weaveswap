@@ -67,9 +67,15 @@ contract Pool {
     }
 
     /**
-     * @notice Allows the owner to borrow tokens from the reserve.
-     * @param amount The amount of tokens to borrow.
+     * @notice Allows the owner to change borrow contract.
+     * @param _newBorrowingContract The new borrow contract.
      */
+
+
+    function addBorrowContract(address _newBorrowingContract) external onlyOwner {
+        borrowingContract = _newBorrowingContract;
+    }
+    
     function borrow(uint256 amount) external onlyOwner {
         if (reserve - amount < 0) {
             revert lending_outOfReserve();

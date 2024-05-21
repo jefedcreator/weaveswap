@@ -1,7 +1,11 @@
 {
-  "lendingTracker#LendingTracker": "0xeC3a32E20DA8431B257812A882A71b1abB7D9dF9",
-  "yieldCalculator#YieldCalculator": "0x35665819bd1695dB59585fa45FE2412339d35151",
-  "poolTracker#PoolTracker": "0x640bA0BEC6A905987AbcaD5bF4E6A7a40Bc127C2",
-  "swapRouter#SwapRouter": "0x65c45383Bd0eeD38255A659B5fB15a21d48B605D",
-  "BorrowingTracker#BorrowingTracker": "0x2bE6C4B26f76c80969958687A8311467290Da377"
+  "TestToken1#TestToken1": "0x8333c504E18930c5Bf49F116Be51BD2bF9BaD093",
+  "TestToken2#TestToken2": "0x13Fac99F2baB2f755F713881e797eD3C5cb8E8E5",
+  "TestToken3#TestToken3": "0x4f86E1FE5095706d79ceab172D61Fa9a11F9b34c",
+  "lendingTracker#LendingTracker": "0xA824f5ab1874568586aB9E2f65690B5f717db5b5",
+  "priceAggregator#MockV3Aggregator": "0x78Ae37FCB74af31D432f31aCDba56B8517C3e133",
+  "yieldCalculator#YieldCalculator": "0xf559cE1176e18E358e15C70871B9262FE4f0326D",
+  "poolTracker#PoolTracker": "0x76cC174Ba7BDa4D64C25695920cF2Ce3eac45272",
+  "swapRouter#SwapRouter": "0x2F27d52D5201542066321B8B48769aFd65aEE8a3",
+  "borrowingTracker#BorrowingTracker": "0xEC2B4f8752F086d1d9531D1C4d7aa96f7C242d15"
 }

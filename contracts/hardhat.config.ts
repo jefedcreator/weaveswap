@@ -47,12 +47,11 @@ const config: HardhatUserConfig = {
         chainId: 84532,
         urls: {
           apiURL: "https://api-sepolia.basescan.org/api",
-          browserURL: "	https://sepolia-explorer.base.org"
-        }
-      }
-    ]
+          browserURL: "https://sepolia.basescan.org",
+        },
+      },
+    ],
   },
-  
   ignition: {
     requiredConfirmations: 1,
   },

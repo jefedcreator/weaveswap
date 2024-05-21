@@ -76,6 +76,11 @@ describe("Lending pool", function () {
       mappingResult[0]
     );
 
+    const borrowingContract =
+      await lendingPoolContract.read.borrowingContract();
+
+    console.log("borrowingContract", borrowingContract);
+
     await token1.write.approve([borrowingTracker.address, collateralAmount]);
     await token2.write.approve([borrowingTracker.address, collateralAmount]);
     await token1.write.approve([lendingTracker.address, collateralAmount]);
@@ -159,7 +164,7 @@ describe("Lending pool", function () {
         const mappingResult = await lendingTracker.read.tokenToPool([
           token1.address,
         ]);
-    
+
         expect(mappingResult[1].toLowerCase()).to.equal(
           token1.address.toLowerCase()
         );
@@ -443,7 +448,7 @@ describe("Lending pool", function () {
         await expect(
           borrowingTracker.read.borrowedTokens([ownerAddress, borrowingId])
         ).to.be.rejected;
-  
+
         expect(
           (
             await borrowingTracker.read.borrowReceiptData([
@@ -466,7 +471,7 @@ describe("Lending pool", function () {
           token1.address,
           priceAggregator.address,
         ]);
-          await lendingTracker.write.lendToken([
+        await lendingTracker.write.lendToken([
           token1.address,
           parseEther("50"),
         ]);
