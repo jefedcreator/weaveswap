@@ -321,7 +321,7 @@ const poolAbi = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
 
 const swapAbi = [
   {
@@ -461,9 +461,9 @@ const swapAbi = [
     stateMutability: "payable",
     type: "receive",
   },
-];
+] as const;
 
-const lendAbi = [
+const lendingTrackerAbi = [
   {
     inputs: [],
     stateMutability: "nonpayable",
@@ -699,6 +699,25 @@ const lendAbi = [
     inputs: [
       {
         internalType: "address",
+        name: "_tokenAddress",
+        type: "address",
+      },
+    ],
+    name: "getTokenPrice",
+    outputs: [
+      {
+        internalType: "int256",
+        name: "",
+        type: "int256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "tokenAddress",
         type: "address",
       },
@@ -745,6 +764,25 @@ const lendAbi = [
         internalType: "address",
         name: "priceAddress",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "totalLent",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -816,7 +854,7 @@ const lendAbi = [
     stateMutability: "nonpayable",
     type: "function",
   },
-];
+] as const;
 
 const lendingPoolAbi = [
   {
@@ -854,6 +892,19 @@ const lendingPoolAbi = [
     inputs: [],
     name: "lending_reserveNotAvailable",
     type: "error",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_newBorrowingContract",
+        type: "address",
+      },
+    ],
+    name: "addBorrowContract",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [],
@@ -955,25 +1006,6 @@ const lendingPoolAbi = [
       },
     ],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "user",
-        type: "address",
-      },
-    ],
-    name: "isTime",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -1105,9 +1137,9 @@ const lendingPoolAbi = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
 
-const borrowAbi = [
+const borrowTrackerAbi = [
   {
     inputs: [
       {
@@ -1684,6 +1716,25 @@ const borrowAbi = [
     inputs: [
       {
         internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "totalBorrowed",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
         name: "tokenAddress",
         type: "address",
       },
@@ -1727,7 +1778,7 @@ const borrowAbi = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
 
 const poolTrackerAbi = [
   {
@@ -2074,7 +2125,7 @@ const poolTrackerAbi = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
 
 const liquidityPoolAbi = [
   {
@@ -2695,14 +2746,14 @@ const liquidityPoolAbi = [
     stateMutability: "payable",
     type: "receive",
   },
-];
+] as const;
 
 export {
   poolAbi,
   swapAbi,
-  lendAbi,
+  lendingTrackerAbi,
   lendingPoolAbi,
-  borrowAbi,
+  borrowTrackerAbi,
   poolTrackerAbi,
   liquidityPoolAbi,
 };

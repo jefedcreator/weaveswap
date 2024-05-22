@@ -2,9 +2,9 @@ import { IconType } from "@/components";
 import {
   poolAbi,
   swapAbi,
-  lendAbi,
+  lendingTrackerAbi,
   lendingPoolAbi,
-  borrowAbi,
+  borrowTrackerAbi,
   poolTrackerAbi,
 } from "./abis";
 
@@ -17,14 +17,14 @@ import {
 // const swap = "0x3dfBF4C76f99Cc64BF69BAd9ed27DF567d488956";
 // const poolTracker = "0x603D1517726A1b3A4BFA097eaBdB8A2d9F633Cf1";
 
-const lend = "0x5b4d332D6dfeBa4a460A4550c7DA8c050C84eb17";
-const borrow = "0x8e2E68BBefCCFcbD4E15F2C5EF7650293437dA26";
-const pool = "0x0E25e4BD335CF2BaA6f3853c3A642Fd9fA6a6090";
-const tokenA = "0xc71a8be9b0d8d7997681625555095016e634c8E5";
-const tokenB = "0x4C3bDBdaA99353f8d41E7b4a48ef5bb5F07b5659";
-const tokenC = "0x26d02cA984Ae9d1f96238828672255d5409679df";
-const swap = "0xE038650Ba72157cf09807283125cE9A6fDa4cc93";
-const poolTracker = "0x0E25e4BD335CF2BaA6f3853c3A642Fd9fA6a6090";
+const lendingTracker = "0x3cF7D9D147f5e466a752Eb779BaCCc82100A6430";
+const borrowingTracker = "0xFaC4a86efa1Ce75E5Ff549061620a7Df84c17771";
+const pool = "0x76cC174Ba7BDa4D64C25695920cF2Ce3eac45272";
+const tokenA = "0x54C345814e63c7E3aB6a6AFE158ab141e8b47f98";
+const tokenB = "0x64646d24Dc891ed2660dD3cbF88471Aa088F041f";
+const tokenC = "0x57e6943F216D31a7b1E57D8a3Aa59FD7d977C753";
+const swap = "0x2F27d52D5201542066321B8B48769aFd65aEE8a3";
+const poolTracker = "0x4673Ac016dea03e8444B85B1fe57a3CD085A48E4";
 
 const assetName = ["Token A", "Token B", "Token C"] as const;
 type AssetName = (typeof assetName)[number];
@@ -64,7 +64,7 @@ const tokenOptions: ItokenOptions[] = [
 ];
 
 export {
-  lend,
+  borrowingTracker,
   pool,
   swap,
   tokenA,
@@ -72,10 +72,10 @@ export {
   tokenC,
   poolAbi,
   swapAbi,
-  lendAbi,
+  lendingTrackerAbi,
   lendingPoolAbi,
-  borrow,
-  borrowAbi,
+  lendingTracker,
+  borrowTrackerAbi,
   tokenOptions,
   poolTracker,
   poolTrackerAbi,

@@ -4,15 +4,12 @@ import "@rainbow-me/rainbowkit/styles.css";
 import {
   phantomWallet,
   rainbowWallet,
-  walletConnectWallet
+  walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { WagmiProvider } from "wagmi";
-import {
-  baseSepolia,
-  bscTestnet
-} from "wagmi/chains";
+import { baseSepolia, bscTestnet } from "wagmi/chains";
 
 // const config = getDefaultConfig({
 //   projectId: "9d5577b590aa046985d5b2659120032b",
@@ -22,9 +19,10 @@ import {
 // });
 
 const config = getDefaultConfig({
-  appName: "RainbowKit demo",
+  appName: "weaveswap",
   projectId: "9d5577b590aa046985d5b2659120032b",
   chains: [bscTestnet, baseSepolia],
+  
   wallets: [
     {
       groupName: "Recommended",

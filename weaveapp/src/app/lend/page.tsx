@@ -1,5 +1,18 @@
 "use client";
 import { DataTable, Header } from "@/components";
+import {
+  AssetName,
+  Tokens,
+  borrowTrackerAbi,
+  borrowingTracker,
+  lendingPoolAbi,
+  lendingTracker,
+  lendingTrackerAbi,
+  tokenA,
+  tokenB,
+  tokenC,
+  tokenOptions,
+} from "@/constants";
 import { Button, Icon, Input, Modal, Select } from "@/primitives";
 import { createUrl } from "@/utils";
 import * as Tabs from "@radix-ui/react-tabs";
@@ -7,38 +20,16 @@ import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
-import {
-  lend,
-  lendAbi,
-  tokenA,
-  tokenB,
-  tokenC,
-  lendingPoolAbi,
-  borrow,
-  borrowAbi,
-  tokenOptions,
-  AssetName,
-  Tokens,
-} from "@/constants";
+import { erc20Abi, formatEther, parseEther, parseUnits } from "viem";
 import {
   useAccount,
-  useEstimateFeesPerGas,
   useReadContract,
-  useReadContracts,
-  useSimulateContract,
   useWaitForTransactionReceipt,
   useWatchContractEvent,
   useWriteContract,
 } from "wagmi";
-import {
-  erc20Abi,
-  parseUnits,
-  parseEther,
-  formatEther,
-  formatUnits,
-} from "viem";
-import { toast } from "sonner";
 
 type TabType = "supply" | "borrow";
 
@@ -53,8 +44,8 @@ type Asset = {
 };
 
 const lendContract = {
-  abi: lendAbi,
-  address: lend,
+  abi: lendingTrackerAbi,
+  address: lendingTracker,
 } as const;
 
 // const lendingPoolContract = {
@@ -81,45 +72,27 @@ const Lend = () => {
     router.replace(optionUrl, { scroll: false });
   };
 
-  const result = useReadContracts({
-    contracts: [
-      {
-        ...lendContract,
-        functionName: "allAvailableTokens",
-      },
-      {
-        ...lendContract,
-        functionName: "tokenToPool",
-        args: [tokenA],
-      },
-    ],
-  });
-
   const { data: availableTokens, isLoading } = useReadContract({
-    abi: lendAbi,
-    address: lend,
+    abi: lendingTrackerAbi,
+    address: lendingTracker,
     functionName: "allAvailableTokens",
     account: address,
   });
 
-  const { data: Pooldetail, isLoading: isPoolDetailLoading } = useReadContract({
-    abi: lendAbi,
-    address: lend,
+  const { data: pooldetail, isLoading: isPoolDetailLoading } = useReadContract({
+    abi: lendingTrackerAbi,
+    address: lendingTracker,
     functionName: "tokenToPool",
     account: address,
     args: [tokenA],
   });
 
-  const pooldetail = useMemo(() => Pooldetail as string[], [Pooldetail]);
-
-  const { data: borrowingAPY, isLoading: isAPYLoading } = useReadContract({
+  const { data: borrowingContract, isLoading: isAPYLoading } = useReadContract({
     abi: lendingPoolAbi,
     address: pooldetail?.[0] as `0x${string}`,
-    functionName: "borrowingAPY",
-    account: address,
+    functionName: "borrowingContract",
+    // account: address,
   });
-
-  console.log("borrowingAPY", borrowingAPY);
 
   const {
     data: tokenABalance,
@@ -161,7 +134,7 @@ const Lend = () => {
     address: tokenA as `0x${string}`,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [address as `0x${string}`, lend],
+    args: [address as `0x${string}`, lendingTracker],
   });
 
   const {
@@ -171,7 +144,7 @@ const Lend = () => {
     address: tokenA as `0x${string}`,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [address as `0x${string}`, borrow],
+    args: [address as `0x${string}`, borrowingTracker],
   });
 
   const {
@@ -181,7 +154,7 @@ const Lend = () => {
     address: tokenB as `0x${string}`,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [address as `0x${string}`, lend],
+    args: [address as `0x${string}`, lendingTracker],
   });
 
   const {
@@ -191,7 +164,7 @@ const Lend = () => {
     address: tokenB as `0x${string}`,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [address as `0x${string}`, borrow],
+    args: [address as `0x${string}`, borrowingTracker],
   });
 
   const {
@@ -201,7 +174,7 @@ const Lend = () => {
     address: tokenC as `0x${string}`,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [address as `0x${string}`, lend],
+    args: [address as `0x${string}`, lendingTracker],
   });
 
   const {
@@ -211,7 +184,22 @@ const Lend = () => {
     address: tokenC as `0x${string}`,
     abi: erc20Abi,
     functionName: "allowance",
-    args: [address as `0x${string}`, borrow],
+    args: [address as `0x${string}`, borrowingTracker],
+  });
+
+  const { data: totalBorrowed, refetch: refetchTotalBorrowed } =
+    useReadContract({
+      address: borrowingTracker as `0x${string}`,
+      abi: borrowTrackerAbi,
+      functionName: "totalBorrowed",
+      args: [address as `0x${string}`],
+    });
+
+  const { data: totalLent, refetch: refetchTotalLent } = useReadContract({
+    address: lendingTracker as `0x${string}`,
+    abi: lendingTrackerAbi,
+    functionName: "totalLent",
+    args: [address as `0x${string}`],
   });
 
   const getAllowance = (token: Tokens) => {
@@ -238,31 +226,27 @@ const Lend = () => {
     await refetchTokenA();
     await refetchTokenB();
     await refetchTokenC();
+    await refetchTotalLent();
+    await refetchTotalBorrowed();
   };
 
   useWatchContractEvent({
-    address: lend,
-    abi: lendAbi,
+    address: lendingTracker,
+    abi: lendingTrackerAbi,
     eventName: "userLended",
     async onLogs(logs) {
-      console.log("User Lended!", logs);
       await refetchBalances();
     },
   });
 
   useWatchContractEvent({
-    address: borrow,
-    abi: borrowAbi,
+    address: borrowingTracker,
+    abi: borrowTrackerAbi,
     eventName: "userBorrowed",
     async onLogs(logs) {
-      console.log("User Borrowed!", logs);
       await refetchBalances();
     },
   });
-
-  console.log("Pooldetail", Pooldetail);
-  // console.log("borrowingAPY", borrowingAPY.toString());
-  console.log("availableTokens", availableTokens);
 
   const assets: Asset[] = useMemo(() => {
     if (!availableTokens) return [];
@@ -310,10 +294,15 @@ const Lend = () => {
       }
       return tokenInfo;
     });
-  }, [availableTokens, address, tokenABalance, tokenBBalance, tokenCBalance]);
-
-  console.log("availableTokens", assets);
-
+  }, [
+    availableTokens,
+    address,
+    tokenABalance,
+    tokenBBalance,
+    tokenCBalance,
+    totalLent,
+    totalBorrowed,
+  ]);
 
   const columns: ColumnDef<Asset>[] = [
     {
@@ -390,9 +379,13 @@ const Lend = () => {
         };
 
         const [inputAmount, setInputAmount] = useState<number | string>(0);
-        const [tokenCollateral, setTokenCollateral] = useState({
+        const [tokenCollateral, setTokenCollateral] = useState<{
+          name: string;
+          address: `0x${string}`;
+          value: number;
+        }>({
           name: "",
-          address: "",
+          address: `0x0`,
           value: 0,
         });
         const searchParams = useSearchParams();
@@ -482,7 +475,7 @@ const Lend = () => {
               address: token as `0x${string}`,
               abi: erc20Abi,
               functionName: "approve",
-              args: [lend as `0x${string}`, parseUnits("100", 10)],
+              args: [lendingTracker as `0x${string}`, parseUnits("100", 10)],
             });
             toast.success("Token approved succesfully");
           } catch (error) {
@@ -496,8 +489,6 @@ const Lend = () => {
             const allowance = getBorrowAllowance(
               tokenCollateral.address as Tokens,
             );
-            console.log("allowance", allowance);
-
             if (
               parseFloat(allowance) <
               parseFloat(tokenCollateral.value.toString())
@@ -522,7 +513,7 @@ const Lend = () => {
               address: tokenCollateral.address as `0x${string}`,
               abi: erc20Abi,
               functionName: "approve",
-              args: [borrow as `0x${string}`, parseUnits("100", 10)],
+              args: [borrowingTracker as `0x${string}`, parseUnits("100", 10)],
             });
             toast.success("Token approved succesfully");
           } catch (error) {
@@ -534,13 +525,14 @@ const Lend = () => {
         const handleSupply = async () => {
           try {
             await writeContractAsync({
-              abi: lendAbi,
-              address: lend,
+              abi: lendingTrackerAbi,
+              address: lendingTracker,
               functionName: "lendToken",
               account: address,
               args: [token, parseEther(inputAmount.toString())],
             });
             await refetchBalances();
+            await refetchTotalLent();
             handleIsModal();
             toast.success("Token supplied succesfully");
           } catch (error) {
@@ -552,8 +544,8 @@ const Lend = () => {
         const handleStakeCollateral = async () => {
           try {
             await writeStakeCollateralAsync({
-              abi: borrowAbi,
-              address: borrow,
+              abi: borrowTrackerAbi,
+              address: borrowingTracker,
               functionName: "stakeCollateral",
               account: address,
               args: [
@@ -571,13 +563,14 @@ const Lend = () => {
         const handleBorrow = async () => {
           try {
             await writeContractAsync({
-              abi: borrowAbi,
-              address: borrow,
+              abi: borrowTrackerAbi,
+              address: borrowingTracker,
               functionName: "borrowToken",
               account: address,
               args: [token, parseEther(inputAmount.toString())],
             });
             await refetchBalances();
+            await refetchTotalBorrowed();
             handleIsModal();
             toast.success("Token Borrowed succesfully");
           } catch (error) {
@@ -587,7 +580,6 @@ const Lend = () => {
         };
 
         useEffect(() => {
-          console.log("isApproved", isApproved);
           if (isApproved) {
             handleSupply();
           }
@@ -595,14 +587,12 @@ const Lend = () => {
 
         useEffect(() => {
           if (isCollateralApproved) {
-            console.log("isCollateralApproved", isCollateralApproved);
             handleStakeCollateral();
           }
         }, [isCollateralApproved]);
 
         useEffect(() => {
           if (isCollateralSuccesss) {
-            console.log("isCollateralSuccesss", isCollateralSuccesss);
             handleBorrow();
           }
         }, [isCollateralSuccesss]);
@@ -679,10 +669,9 @@ const Lend = () => {
                               (tokenOption) => tokenOption.value !== token,
                             )}
                             onChange={(option) => {
-                              console.log(option?.value);
                               setTokenCollateral({
                                 name: option?.label!,
-                                address: option?.value!,
+                                address: option?.value! as `0x${string}`,
                                 value: 0,
                               });
                             }}
@@ -791,6 +780,8 @@ const Lend = () => {
     },
   ];
 
+  useEffect(() => {}, [totalBorrowed, totalBorrowed]);
+
   return (
     <main className="flex min-h-screen flex-col gap-3 bg-black p-10">
       <Header />
@@ -810,7 +801,12 @@ const Lend = () => {
             <Icon name="supply" />
             Total Supply
           </span>
-          <p className="text-2xl">$0.000</p>
+          <p className="text-2xl">{`$${
+            totalLent?.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }) || 0
+          }`}</p>
         </div>
         <hr className="h-full w-[1px] bg-grey-2" />
         <div className="flex flex-col items-center justify-center">
@@ -826,7 +822,12 @@ const Lend = () => {
             <Icon name="borrow" />
             Total Borrow
           </span>
-          <p className="text-2xl">$0.000</p>
+          <p className="text-2xl">{`$${
+            totalBorrowed?.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            }) || 0
+          }`}</p>
         </div>
       </div>
       <Tabs.Root
