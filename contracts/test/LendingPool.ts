@@ -36,28 +36,12 @@ describe("Lending pool", function () {
       swapRouter.address,
     ]);
 
-    // const lendingPool1 = await hre.viem.deployContract("Pool", [
-    //   token1.address,
-    //   borrowingTracker.address,
-    // ]);
-
-    // const lendingPool2 = await hre.viem.deployContract("Pool", [
-    //   token2.address,
-    //   borrowingTracker.address,
-    // ]);
-
     const publicClient = await hre.viem.getPublicClient();
     const collateralAmount = parseEther("10000");
     const collateralAmount2 = parseEther("500");
-    // await token1.write.mint([ownerAddress, collateralAmount]);
     await token1.write.approve([lendingTracker.address, collateralAmount]);
 
     await lendingTracker.write.addBorrowingContract([borrowingTracker.address]);
-    // await lendingTracker.write.addTokenPool([
-    //   token1.address,
-    //   priceAggregator.address,
-    // ]);
-
     await lendingTracker.write.addTokenPool([
       token1.address,
       priceAggregator.address,
@@ -75,11 +59,6 @@ describe("Lending pool", function () {
       "Pool",
       mappingResult[0]
     );
-
-    const borrowingContract =
-      await lendingPoolContract.read.borrowingContract();
-
-    console.log("borrowingContract", borrowingContract);
 
     await token1.write.approve([borrowingTracker.address, collateralAmount]);
     await token2.write.approve([borrowingTracker.address, collateralAmount]);
@@ -164,10 +143,13 @@ describe("Lending pool", function () {
         const mappingResult = await lendingTracker.read.tokenToPool([
           token1.address,
         ]);
-
         expect(mappingResult[1].toLowerCase()).to.equal(
           token1.address.toLowerCase()
         );
+        await lendingTracker.write.changePriceFeed([
+          token1.address,
+          priceAggregator.address,
+        ]);
       });
     });
     describe("lendToken", () => {
@@ -185,6 +167,7 @@ describe("Lending pool", function () {
           token2.address,
           parseEther("100"),
         ]);
+
         expect(
           await token1.read.balanceOf([lendingPoolContract.address])
         ).to.equal(parseEther("500"));
@@ -306,6 +289,7 @@ describe("Lending pool", function () {
           token2.address,
           parseEther("0.1"),
         ]);
+
         const deployerBalanceAfter = await token2.read.balanceOf([
           ownerAddress,
         ]);
@@ -373,7 +357,9 @@ describe("Lending pool", function () {
           token2.address,
           parseEther("1"),
         ]);
-
+        const totalBorrowed = await borrowingTracker.read.totalBorrowed([
+          ownerAddress,
+        ]);
         await borrowingTracker.write.returnBorrowedToken([
           borrowingId,
           parseEther("1"),
@@ -467,10 +453,7 @@ describe("Lending pool", function () {
         await token1.write.approve([lendingTracker.address, collateralAmount]);
         await token2.write.mint([ownerAddress, collateralAmount]);
         await token2.write.approve([lendingTracker.address, collateralAmount]);
-        await lendingTracker.write.changePriceFeed([
-          token1.address,
-          priceAggregator.address,
-        ]);
+
         await lendingTracker.write.lendToken([
           token1.address,
           parseEther("50"),

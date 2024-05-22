@@ -82,6 +82,7 @@ contract BorrowingTracker {
     mapping(address => mapping(address => uint256[])) public userBorrowReceipts; // All receipt ids for a certain token address of user
     mapping(address => mapping(uint256 => borrowReceipt))
         public borrowReceiptData; // Id to receipt
+    mapping(address => uint256) public totalBorrowed; // Total borrowed amount of the user, it increments with each borrow
 
     /**
      * @notice Allows a user to borrow tokens from a specific lending pool.
@@ -92,7 +93,7 @@ contract BorrowingTracker {
      */
     function borrowToken(address tokenAddress, uint256 tokenAmount) external {
         // Checks if the pool exists
-        (Pool poolAddress, ) = lendingTracker.tokenToPool(tokenAddress);
+        (Pool poolAddress, address priceAddress) = lendingTracker.tokenToPool(tokenAddress);
         if (address(poolAddress) == address(0)) {
             revert lendingTracker_poolNotAvailable();
         }
@@ -122,7 +123,12 @@ contract BorrowingTracker {
         IERC20(tokenAddress).transfer(msg.sender, tokenAmount);
         // User receipt Id
         borrowingId[msg.sender] += 1;
-
+   // Convert price and update total borrowed amount
+        int conversion = usdConverter(priceAddress);
+        require(conversion >= 0, "Conversion must be non-negative");
+        uint256 conversionUint = uint256(conversion);
+        uint256 borrowedAmount = conversionUint * tokenAmount;
+        totalBorrowed[msg.sender] += borrowedAmount;
         // Event
         emit userBorrowed(msg.sender, tokenAddress, tokenAmount);
     }
