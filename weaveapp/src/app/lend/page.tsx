@@ -14,7 +14,7 @@ import {
   tokenOptions,
 } from "@/constants";
 import { Button, Icon, Input, Modal, Select } from "@/primitives";
-import { createUrl } from "@/utils";
+import { createUrl, formatNumber } from "@/utils";
 import * as Tabs from "@radix-ui/react-tabs";
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
@@ -79,7 +79,7 @@ const Lend = () => {
     account: address,
   });
 
-  const { data: pooldetail, isLoading: isPoolDetailLoading } = useReadContract({
+  const { data: pooldetail } = useReadContract({
     abi: lendingTrackerAbi,
     address: lendingTracker,
     functionName: "tokenToPool",
@@ -87,12 +87,87 @@ const Lend = () => {
     args: [tokenA],
   });
 
-  const { data: borrowingContract, isLoading: isAPYLoading } = useReadContract({
+  const { data: poolBdetail } = useReadContract({
+    abi: lendingTrackerAbi,
+    address: lendingTracker,
+    functionName: "tokenToPool",
+    account: address,
+    args: [tokenB],
+  });
+
+  const { data: poolCdetail } = useReadContract({
+    abi: lendingTrackerAbi,
+    address: lendingTracker,
+    functionName: "tokenToPool",
+    account: address,
+    args: [tokenC],
+  });
+
+  // const { data: pooldetail } = useWriteContract({
+  //   abi: lendingTrackerAbi,
+  //   address: lendingTracker,
+  //   functionName: "",
+  //   account: address,
+  //   args: [tokenA],
+  // });
+
+  const { data: borrowingAPY } = useReadContract({
     abi: lendingPoolAbi,
     address: pooldetail?.[0] as `0x${string}`,
-    functionName: "borrowingContract",
+    functionName: "borrowingAPY",
+  });
+
+  const { data: borrowingBAPY } = useReadContract({
+    abi: lendingPoolAbi,
+    address: poolBdetail?.[0] as `0x${string}`,
+    functionName: "borrowingAPY",
+  });
+
+  const { data: borrowingCAPY } = useReadContract({
+    abi: lendingPoolAbi,
+    address: poolCdetail?.[0] as `0x${string}`,
+    functionName: "borrowingAPY",
+  });
+
+  const { data: farmedYield } = useReadContract({
+    abi: lendingPoolAbi,
+    address: pooldetail?.[0] as `0x${string}`,
+    functionName: "farmedYield",
     // account: address,
   });
+
+  const { data: yieldValue } = useReadContract({
+    abi: lendingPoolAbi,
+    address: pooldetail?.[0] as `0x${string}`,
+    functionName: "yield",
+    // account: address,
+  });
+
+  const { data: reserve, refetch: refechAReserve } = useReadContract({
+    abi: lendingPoolAbi,
+    address: pooldetail?.[0] as `0x${string}`,
+    functionName: "reserve",
+    // account: address,
+  });
+
+  const { data: reserveB, refetch: refechBReserve } = useReadContract({
+    abi: lendingPoolAbi,
+    address: poolBdetail?.[0] as `0x${string}`,
+    functionName: "reserve",
+  });
+
+  const { data: reserveC, refetch: refechCReserve } = useReadContract({
+    abi: lendingPoolAbi,
+    address: poolCdetail?.[0] as `0x${string}`,
+    functionName: "reserve",
+  });
+
+  console.log("borrowingAPY", borrowingAPY);
+  console.log("yield", yieldValue);
+  console.log("farmedYield", farmedYield);
+  console.log("reserve", reserve);
+  console.log("reserveB", reserveB);
+  console.log("reserveC", reserveC);
 
   const {
     data: tokenABalance,
@@ -267,8 +342,8 @@ const Lend = () => {
           Address: availableToken,
           Image: "/blylogo",
           "Wallet Balance": formatEther(BigInt(tokenABalance ?? 0)),
-          APY: "3.23%",
-          "Total Supplied": "20M",
+          APY: `${borrowingAPY || 0}%`,
+          "Total Supplied": formatNumber(formatEther(reserve || 0n)),
           Action: "Supply",
         };
       } else if (availableToken === tokenB) {
@@ -277,8 +352,8 @@ const Lend = () => {
           Address: availableToken,
           Image: "/clylogo",
           "Wallet Balance": formatEther(BigInt(tokenBBalance ?? 0)),
-          APY: "3.23%",
-          "Total Supplied": "20M",
+          APY: `${borrowingBAPY || 0}%`,
+          "Total Supplied": formatNumber(formatEther(reserveB || 0n)),
           Action: "Supply",
         };
       } else if (availableToken === tokenC) {
@@ -287,8 +362,8 @@ const Lend = () => {
           Address: availableToken,
           Image: "/dotlogo",
           "Wallet Balance": formatEther(BigInt(tokenCBalance ?? 0)),
-          APY: "3.23%",
-          "Total Supplied": "20M",
+          APY: `${borrowingCAPY || 0}%`,
+          "Total Supplied": formatNumber(formatEther(reserveC || 0n)),
           Action: "Supply",
         };
       }
@@ -302,6 +377,9 @@ const Lend = () => {
     tokenCBalance,
     totalLent,
     totalBorrowed,
+    borrowingAPY,
+    borrowingBAPY,
+    borrowingCAPY,
   ]);
 
   const columns: ColumnDef<Asset>[] = [

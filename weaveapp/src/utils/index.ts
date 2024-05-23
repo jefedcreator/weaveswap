@@ -9,3 +9,14 @@ export const createUrl = (
 
   return `${pathname}${queryString}`;
 };
+
+export const formatNumber = (num: string) => {
+  const figure = parseInt(num);
+  if (figure >= 1e6) {
+    return (figure / 1e6).toFixed(1) + "M";
+  }
+  if (figure >= 1e3) {
+    return (figure / 1e3).toFixed(1) + "K";
+  }
+  return figure.toString();
+};
