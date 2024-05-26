@@ -170,6 +170,11 @@ describe("LiquidityPoolTest", function () {
       const getAssetOne = (await liquidityPool.read.getAssetOne()).toString();
       const getAssetTwo = (await liquidityPool.read.getAssetTwo()).toString();
 
+      console.log("assetTwoPrice", assetTwoPrice);
+      console.log("assetOnePrice", assetOnePrice);
+      console.log("getAssetOne", getAssetOne);
+      console.log("getAssetTwo", getAssetTwo);
+      
       expect(
         parseInt(assetTwoPrice) / parseInt(parseEther("1").toString())
       ).to.equal(parseInt(getAssetOne) / parseInt(getAssetTwo));
