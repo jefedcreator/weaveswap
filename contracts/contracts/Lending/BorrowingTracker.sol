@@ -123,7 +123,7 @@ contract BorrowingTracker {
         IERC20(tokenAddress).transfer(msg.sender, tokenAmount);
         // User receipt Id
         borrowingId[msg.sender] += 1;
-   // Convert price and update total borrowed amount
+        // Convert price and update total borrowed amount
         int conversion = usdConverter(priceAddress);
         require(conversion >= 0, "Conversion must be non-negative");
         uint256 conversionUint = uint256(conversion);
@@ -450,7 +450,7 @@ contract BorrowingTracker {
         borrowReceiptData[msg.sender][id].amount -= tokenAmount;
         uint256 borrowInterest = accruedInterest(id, msg.sender, tokenAmount);
         // From msg sender to this contract
-        (Pool poolAddress, ) = lendingTracker.tokenToPool(tokenAddress);
+        (Pool poolAddress, address priceAddress) = lendingTracker.tokenToPool(tokenAddress);
         IERC20(tokenAddress).transferFrom(
             msg.sender,
             address(poolAddress),
@@ -485,6 +485,13 @@ contract BorrowingTracker {
                 }
             }
         }
+
+        int conversion = usdConverter(priceAddress);
+        require(conversion >= 0, "Conversion must be non-negative");
+        uint256 conversionUint = uint256(conversion);
+        uint256 borrowedAmount = conversionUint * tokenAmount;
+        totalBorrowed[msg.sender] -= borrowedAmount;
+
         // Event
         emit userReturnedBorrowedToken(
             msg.sender,

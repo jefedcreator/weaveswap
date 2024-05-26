@@ -71,7 +71,6 @@ contract Pool {
      * @param _newBorrowingContract The new borrow contract.
      */
 
-
     function addBorrowContract(address _newBorrowingContract) external onlyOwner {
         borrowingContract = _newBorrowingContract;
     }

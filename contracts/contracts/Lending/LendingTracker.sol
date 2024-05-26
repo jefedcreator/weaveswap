@@ -44,8 +44,6 @@ contract LendingTracker {
     event userWithdrawnLendedTokens(address indexed user, address tokenAddress, uint256 tokenAmount);
     event userFarmedYield(address user, address tokenAddress, uint256 tokenAmount);
 
-
-
     function addTokenPool(address tokenAddress, address priceAddress) external {
         if (msg.sender != owner) {
             revert lendingTracker_addressNotAllowed();
@@ -118,7 +116,11 @@ contract LendingTracker {
                 }
             }
         }
-
+        int conversion = getTokenPrice(tokenAddress);
+        require(conversion >= 0, "Conversion must be non-negative");
+        uint256 conversionUint = uint256(conversion);
+        uint256 borrowedAmount = conversionUint * tokenAmount;
+        totalLent[msg.sender] -= borrowedAmount;
         emit userWithdrawnLendedTokens(msg.sender, tokenAddress, tokenAmount);
     }
 
@@ -135,7 +137,7 @@ contract LendingTracker {
         uint256 yield = tokenToPool[tokenAddress].poolAddress.getYield(msg.sender, userLendedAmount[msg.sender][tokenAddress]);
         emit userFarmedYield(msg.sender, tokenAddress, yield);
     }
-
+ 
     function allAvailableTokens() external view returns (address[] memory) {
         return availableTokens;
     }

@@ -1,7 +1,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
 import hre from "hardhat";
-import { formatEther, formatUnits, parseEther } from "viem";
+import { formatEther, parseEther } from "viem";
 
 describe("Lending pool", function () {
   // We define a fixture to reuse the same setup in every test.
@@ -26,7 +26,15 @@ describe("Lending pool", function () {
     const swapRouter = await hre.viem.deployContract("SwapRouter", [
       poolTracker.address,
     ]);
-    const priceAggregator = await hre.viem.deployContract("MockV3Aggregator", [
+    const priceAggregator1 = await hre.viem.deployContract("MockV3Aggregator", [
+      8,
+      BigInt(5000000000),
+    ]);
+    const priceAggregator2 = await hre.viem.deployContract("MockV3Aggregator", [
+      8,
+      BigInt(5000000000),
+    ]);
+    const priceAggregator3 = await hre.viem.deployContract("MockV3Aggregator", [
       8,
       BigInt(5000000000),
     ]);
@@ -44,12 +52,12 @@ describe("Lending pool", function () {
     await lendingTracker.write.addBorrowingContract([borrowingTracker.address]);
     await lendingTracker.write.addTokenPool([
       token1.address,
-      priceAggregator.address,
+      priceAggregator1.address,
     ]);
 
     await lendingTracker.write.addTokenPool([
       token2.address,
-      priceAggregator.address,
+      priceAggregator2.address,
     ]);
 
     const mappingResult = await lendingTracker.read.tokenToPool([
@@ -82,7 +90,8 @@ describe("Lending pool", function () {
       ownerAddress,
       lendingTracker,
       borrowingTracker,
-      priceAggregator,
+      priceAggregator1,
+      priceAggregator2,
       collateralAmount,
       mappingResult,
       collateralAmount2,
@@ -109,7 +118,8 @@ describe("Lending pool", function () {
       ownerAddress,
       lendingTracker,
       borrowingTracker,
-      priceAggregator,
+      priceAggregator1,
+      priceAggregator2,
       mappingResult,
       token2,
       lendingPoolContract,
@@ -119,7 +129,7 @@ describe("Lending pool", function () {
     describe("Deploys the new pool contracts", () => {
       it("Adds pool to a mapping", async () => {
         expect(mappingResult[1].toLowerCase()).to.equal(
-          priceAggregator.address.toLowerCase()
+          priceAggregator1.address.toLowerCase()
         );
       });
       it("Pool variables", async () => {
@@ -148,7 +158,7 @@ describe("Lending pool", function () {
         );
         await lendingTracker.write.changePriceFeed([
           token1.address,
-          priceAggregator.address,
+          priceAggregator2.address,
         ]);
       });
     });

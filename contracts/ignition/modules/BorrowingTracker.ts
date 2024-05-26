@@ -9,7 +9,9 @@ import TestToken3Module from "./TestToken3";
 const BorrowingTrackerModule = buildModule("borrowingTracker", (m) => {
   const { swapRouter } = m.useModule(SwapRouterModule);
   const { lendingTracker } = m.useModule(LendingTrackerModule);
-  const { priceAggregator } = m.useModule(PriceAggregatorTrackerModule);
+  const { priceAggregator1, priceAggregator2, priceAggregator3 } = m.useModule(
+    PriceAggregatorTrackerModule
+  );
   const { token1 } = m.useModule(TestToken1Module);
   const { token2 } = m.useModule(TestToken2Module);
   const { token3 } = m.useModule(TestToken3Module);
@@ -28,19 +30,49 @@ const BorrowingTrackerModule = buildModule("borrowingTracker", (m) => {
     }
   );
 
-  m.call(lendingTracker, "addTokenPool", [token1, priceAggregator], {
-    id: "addtoken1id",
-    after: [addBorrowingContract],
+  const addtoken1id = m.call(
+    lendingTracker,
+    "addTokenPool",
+    [token1, priceAggregator1],
+    {
+      id: "addtoken1id",
+      after: [addBorrowingContract],
+    }
+  );
+
+  m.call(lendingTracker, "changeBorrowingAPY", [token1, 1], {
+    id: "changeBorrowingAPY1",
+    after: [addtoken1id],
   });
 
-  m.call(lendingTracker, "addTokenPool", [token2, priceAggregator], {
-    id: "addtoken2id",
-    after: [addBorrowingContract],
+  const addtoken2id = m.call(
+    lendingTracker,
+    "addTokenPool",
+    [token2, priceAggregator2],
+    {
+      id: "addtoken2id",
+      after: [addBorrowingContract],
+    }
+  );
+
+  m.call(lendingTracker, "changeBorrowingAPY", [token2, 2], {
+    id: "changeBorrowingAPY2",
+    after: [addtoken2id],
   });
 
-  m.call(lendingTracker, "addTokenPool", [token3, priceAggregator], {
-    id: "addtoken3id",
-    after: [addBorrowingContract],
+  const addtoken3id = m.call(
+    lendingTracker,
+    "addTokenPool",
+    [token3, priceAggregator3],
+    {
+      id: "addtoken3id",
+      after: [addBorrowingContract],
+    }
+  );
+
+  m.call(lendingTracker, "changeBorrowingAPY", [token3, 3], {
+    id: "changeBorrowingAPY3",
+    after: [addtoken3id],
   });
 
   return { borrowingTracker };
