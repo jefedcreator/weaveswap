@@ -89,9 +89,6 @@ describe("LiquidityPoolTest", function () {
         .rejected;
       const initialLiquidityProvidedTime =
         await liquidityPool.read.initialLiquidityProvidedTime([ownerAddress]);
-      console.log("initialLiquidityProvidedTime", initialLiquidityProvidedTime);
-      console.log("currrent time", await time.latest());
-
       expect(await liquidityPool.read.isTimeInitialLiquidity()).to.equal(false);
       const unlockTime = BigInt((await time.latest()) + 31557600);
       await time.increaseTo(unlockTime);
@@ -169,12 +166,6 @@ describe("LiquidityPoolTest", function () {
       ).toString();
       const getAssetOne = (await liquidityPool.read.getAssetOne()).toString();
       const getAssetTwo = (await liquidityPool.read.getAssetTwo()).toString();
-
-      console.log("assetTwoPrice", assetTwoPrice);
-      console.log("assetOnePrice", assetOnePrice);
-      console.log("getAssetOne", getAssetOne);
-      console.log("getAssetTwo", getAssetTwo);
-      
       expect(
         parseInt(assetTwoPrice) / parseInt(parseEther("1").toString())
       ).to.equal(parseInt(getAssetOne) / parseInt(getAssetTwo));
