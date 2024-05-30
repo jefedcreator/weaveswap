@@ -1912,6 +1912,36 @@ const poolTrackerAbi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "getAllPoolWithAssets",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "pool",
+            type: "address",
+          },
+          {
+            internalType: "address payable",
+            name: "assetOneAddress",
+            type: "address",
+          },
+          {
+            internalType: "address payable",
+            name: "assetTwoAddress",
+            type: "address",
+          },
+        ],
+        internalType: "struct PoolTracker.poolWithTokens[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -2754,6 +2784,294 @@ const liquidityPoolAbi = [
   },
 ] as const;
 
+const poolMetricsAbi = [
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_poolTracker",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_ethPriceFeed",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_swapRouter",
+        type: "address",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "tokenAddress2",
+        type: "address",
+      },
+    ],
+    name: "dailyRate",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "tokenAddress2",
+        type: "address",
+      },
+    ],
+    name: "dailyRoi",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "ethPriceFeed",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+    ],
+    name: "marketCap",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "tokenAddress2",
+        type: "address",
+      },
+    ],
+    name: "pairMarketCap",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "tokenAddress2",
+        type: "address",
+      },
+    ],
+    name: "pairTvl",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "tokenAddress2",
+        type: "address",
+      },
+    ],
+    name: "pairTvlRatio",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "poolTracker",
+    outputs: [
+      {
+        internalType: "contract PoolTracker",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "swapRouter",
+    outputs: [
+      {
+        internalType: "contract SwapRouter",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "tokenAddress2",
+        type: "address",
+      },
+    ],
+    name: "totalRoi",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+    ],
+    name: "tvl",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+    ],
+    name: "tvlRatio",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "tokenAddress",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "tokenAmount",
+        type: "uint256",
+      },
+    ],
+    name: "usdValue",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
+
 export {
   poolAbi,
   swapAbi,
@@ -2762,4 +3080,5 @@ export {
   borrowTrackerAbi,
   poolTrackerAbi,
   liquidityPoolAbi,
+  poolMetricsAbi,
 };

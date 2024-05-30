@@ -174,7 +174,7 @@ const Lend = () => {
     refetch: refetchTokenA,
     isLoading: isTokenALoading,
   } = useReadContract({
-    address: tokenA as `0x${string}`,
+    address: tokenA,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [address as `0x${string}`],
@@ -185,7 +185,7 @@ const Lend = () => {
     refetch: refetchTokenB,
     isLoading: isTokenBLoading,
   } = useReadContract({
-    address: tokenB as `0x${string}`,
+    address: tokenB,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [address as `0x${string}`],
@@ -196,7 +196,7 @@ const Lend = () => {
     refetch: refetchTokenC,
     isLoading: isTokenCLoading,
   } = useReadContract({
-    address: tokenC as `0x${string}`,
+    address: tokenC,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [address as `0x${string}`],
@@ -206,7 +206,7 @@ const Lend = () => {
     data: tokenAAllowance,
     // isLoading: isTokenCLoading,
   } = useReadContract({
-    address: tokenA as `0x${string}`,
+    address: tokenA,
     abi: erc20Abi,
     functionName: "allowance",
     args: [address as `0x${string}`, lendingTracker],
@@ -216,7 +216,7 @@ const Lend = () => {
     data: tokenABorrowAllowance,
     // isLoading: isTokenCLoading,
   } = useReadContract({
-    address: tokenA as `0x${string}`,
+    address: tokenA,
     abi: erc20Abi,
     functionName: "allowance",
     args: [address as `0x${string}`, borrowingTracker],
@@ -226,7 +226,7 @@ const Lend = () => {
     data: tokenBAllowance,
     // isLoading: isTokenCLoading,
   } = useReadContract({
-    address: tokenB as `0x${string}`,
+    address: tokenB,
     abi: erc20Abi,
     functionName: "allowance",
     args: [address as `0x${string}`, lendingTracker],
@@ -236,7 +236,7 @@ const Lend = () => {
     data: tokenBBorrowAllowance,
     // isLoading: isTokenCLoading,
   } = useReadContract({
-    address: tokenB as `0x${string}`,
+    address: tokenB,
     abi: erc20Abi,
     functionName: "allowance",
     args: [address as `0x${string}`, borrowingTracker],
@@ -246,7 +246,7 @@ const Lend = () => {
     data: tokenCAllowance,
     // isLoading: isTokenCLoading,
   } = useReadContract({
-    address: tokenC as `0x${string}`,
+    address: tokenC,
     abi: erc20Abi,
     functionName: "allowance",
     args: [address as `0x${string}`, lendingTracker],
@@ -256,7 +256,7 @@ const Lend = () => {
     data: tokenCBorrowAllowance,
     // isLoading: isTokenCLoading,
   } = useReadContract({
-    address: tokenC as `0x${string}`,
+    address: tokenC,
     abi: erc20Abi,
     functionName: "allowance",
     args: [address as `0x${string}`, borrowingTracker],
@@ -264,14 +264,14 @@ const Lend = () => {
 
   const { data: totalBorrowed, refetch: refetchTotalBorrowed } =
     useReadContract({
-      address: borrowingTracker as `0x${string}`,
+      address: borrowingTracker,
       abi: borrowTrackerAbi,
       functionName: "totalBorrowed",
       args: [address as `0x${string}`],
     });
 
   const { data: totalLent, refetch: refetchTotalLent } = useReadContract({
-    address: lendingTracker as `0x${string}`,
+    address: lendingTracker,
     abi: lendingTrackerAbi,
     functionName: "totalLent",
     args: [address as `0x${string}`],
@@ -298,11 +298,16 @@ const Lend = () => {
   };
 
   const refetchBalances = async () => {
-    await refetchTokenA();
-    await refetchTokenB();
-    await refetchTokenC();
-    await refetchTotalLent();
-    await refetchTotalBorrowed();
+    await Promise.all([
+      refetchTokenA(),
+      refetchTokenB(),
+      refetchTokenC(),
+      refetchTotalLent(),
+      refetchTotalBorrowed(),
+      refechAReserve(),
+      refechBReserve(),
+      refechCReserve(),
+    ]);
   };
 
   useWatchContractEvent({
@@ -553,7 +558,7 @@ const Lend = () => {
               address: token as `0x${string}`,
               abi: erc20Abi,
               functionName: "approve",
-              args: [lendingTracker as `0x${string}`, parseUnits("100", 10)],
+              args: [lendingTracker, parseUnits("100", 10)],
             });
             toast.success("Token approved succesfully");
           } catch (error) {
@@ -591,7 +596,7 @@ const Lend = () => {
               address: tokenCollateral.address as `0x${string}`,
               abi: erc20Abi,
               functionName: "approve",
-              args: [borrowingTracker as `0x${string}`, parseUnits("100", 10)],
+              args: [borrowingTracker, parseUnits("100", 10)],
             });
             toast.success("Token approved succesfully");
           } catch (error) {
@@ -880,10 +885,10 @@ const Lend = () => {
             Total Supply
           </span>
           <p className="text-2xl">{`$${
-            totalLent?.toLocaleString(undefined, {
+            totalLent ? parseInt(formatEther(totalLent))?.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
-            }) || 0
+            }) : 0
           }`}</p>
         </div>
         <hr className="h-full w-[1px] bg-grey-2" />
@@ -901,10 +906,10 @@ const Lend = () => {
             Total Borrow
           </span>
           <p className="text-2xl">{`$${
-            totalBorrowed?.toLocaleString(undefined, {
+            totalBorrowed ? parseInt(formatEther(totalBorrowed))?.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
-            }) || 0
+            }) : 0
           }`}</p>
         </div>
       </div>

@@ -12,6 +12,12 @@ export const createUrl = (
 
 export const formatNumber = (num: string) => {
   const figure = parseInt(num);
+  if (figure >= 1e12) {
+    return (figure / 1e12).toFixed(1) + "T";
+  }
+  if (figure >= 1e9) {
+    return (figure / 1e9).toFixed(1) + "B";
+  }
   if (figure >= 1e6) {
     return (figure / 1e6).toFixed(1) + "M";
   }
