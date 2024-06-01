@@ -11,10 +11,9 @@ import {
   tokenA,
   tokenB,
   tokenC,
-  tokenOptions,
 } from "@/constants";
 import { liquidityPoolAbi } from "@/constants/abis";
-import { Button, Input, Modal, Select } from "@/primitives";
+import { Button, Input, Modal } from "@/primitives";
 import { formatNumber } from "@/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
@@ -27,7 +26,6 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { readContract } from "@wagmi/core";
 
 type Pool = {
   id: string;
@@ -38,7 +36,9 @@ type Pool = {
   Fee: string;
   "Total Market Cap": string;
   ROI: string;
+  Tokens: string;
   Action: string;
+  poolAddress: `0x${string}`;
 };
 
 const Page = () => {
@@ -90,7 +90,7 @@ const Page = () => {
   });
 
   const {
-    data: poolTwoaAssetOneAddress,
+    data: poolTwoAssetOneAddress,
     // isLoading: isTokenCLoading,
   } = useReadContract({
     address: getPools?.[1],
@@ -99,7 +99,7 @@ const Page = () => {
   });
 
   const {
-    data: poolThreeaAssetOneAddress,
+    data: poolThreeAssetOneAddress,
     // isLoading: isTokenCLoading,
   } = useReadContract({
     address: getPools?.[2],
@@ -205,6 +205,7 @@ const Page = () => {
     abi: liquidityPoolAbi,
     functionName: "swapFee",
   });
+  console.log("getPools?.[1]", getPools?.[1]);
 
   const {
     data: poolThreeFee,
@@ -246,7 +247,7 @@ const Page = () => {
     data: poolTwoAssetOneName,
     // isLoading: isTokenCLoading,
   } = useReadContract({
-    address: poolTwoaAssetOneAddress,
+    address: poolTwoAssetOneAddress,
     abi: erc20Abi,
     functionName: "name",
   });
@@ -264,7 +265,7 @@ const Page = () => {
     data: poolThreeAssetOneName,
     // isLoading: isTokenCLoading,
   } = useReadContract({
-    address: poolThreeaAssetOneAddress,
+    address: poolThreeAssetOneAddress,
     abi: erc20Abi,
     functionName: "name",
   });
@@ -299,7 +300,7 @@ const Page = () => {
     abi: poolMetricsAbi,
     functionName: "pairMarketCap",
     args: [
-      poolTwoaAssetOneAddress as `0x${string}`,
+      poolTwoAssetOneAddress as `0x${string}`,
       poolTwoAssetTwoAddress as `0x${string}`,
     ],
   });
@@ -312,26 +313,10 @@ const Page = () => {
     abi: poolMetricsAbi,
     functionName: "pairMarketCap",
     args: [
-      poolThreeaAssetOneAddress as `0x${string}`,
+      poolThreeAssetOneAddress as `0x${string}`,
       poolThreeAssetTwoAddress as `0x${string}`,
     ],
   });
-
-  console.log("poolThreeMarketCap", poolThreeMarketCap);
-
-  const getTotalMarketCap = async (
-    tokenOne: `0x${string}`,
-    tokenTwo: `0x${string}`,
-  ) => {
-    // const result = await readContract(config, {
-    //   abi,
-    //   address: "0x6b175474e89094c44da98b954eedeac495271d0f",
-    //   functionName: "balanceOf",
-    //   args: ["0xd2135CfB216b74109775236E36d4b433F1DF507B"],
-    //   account: "0xd2135CfB216b74109775236E36d4b433F1DF507B",
-    // });
-    // return result;
-  };
 
   const getPoolsA =
     getPools?.filter((pool): pool is `0x${string}` => pool !== null) || [];
@@ -351,6 +336,8 @@ const Page = () => {
           formatEther(BigInt(poolOneMarketCap || 0n)),
         )}`,
         ROI: "13.7%",
+        Tokens: `${poolOneAssetOneAddress}/${poolOneAssetTwoAddress}`,
+        poolAddress: pool,
         Action: "Add Supply",
       },
       [getPoolsA[1] as string]: {
@@ -364,6 +351,8 @@ const Page = () => {
           formatEther(BigInt(poolTwoMarketCap || 0n)),
         )}`,
         ROI: "13.7%",
+        Tokens: `${poolTwoAssetOneAddress}/${poolTwoAssetTwoAddress}`,
+        poolAddress: pool,
         Action: "Add Supply",
       },
       [getPoolsA[2] as string]: {
@@ -377,6 +366,8 @@ const Page = () => {
           formatEther(BigInt(poolThreeMarketCap || 0n)),
         )}`,
         ROI: "13.7%",
+        Tokens: `${poolThreeAssetOneAddress}/${poolThreeAssetTwoAddress}`,
+        poolAddress: pool,
         Action: "Add Supply",
       },
     };
@@ -407,75 +398,6 @@ const Page = () => {
     poolOneAssetTwoName,
   ]);
 
-  // [
-  //   {
-  //     id: "1",
-  //     Pool: "PLY/WAS",
-  //     Composition: "",
-  //     "7d Volume": "$1M",
-  //     "24h Volume": "$456k",
-  //     Fee: "$35.23",
-  //     "Total Market Cap": "$15m",
-  //     ROI: "13.7%",
-  //     Action: "Add Supply",
-  //   },
-  //   {
-  //     id: "2",
-  //     Pool: "CBC/ETH",
-  //     Composition: "",
-  //     "7d Volume": "$1M",
-  //     "24h Volume": "$456k",
-  //     Fee: "$35.23",
-  //     "Total Market Cap": "$15m",
-  //     ROI: "13.7%",
-  //     Action: "Add Supply",
-  //   },
-  //   {
-  //     id: "3",
-  //     Pool: "CLY/WAS",
-  //     Composition: "",
-  //     "7d Volume": "$1M",
-  //     "24h Volume": "$456k",
-  //     Fee: "$35.23",
-  //     "Total Market Cap": "$15m",
-  //     ROI: "13.7%",
-  //     Action: "Add Supply",
-  //   },
-  //   {
-  //     id: "4",
-  //     Pool: "BLY/WAS",
-  //     Composition: "",
-  //     "7d Volume": "$1M",
-  //     "24h Volume": "$456k",
-  //     Fee: "$35.23",
-  //     "Total Market Cap": "$15m",
-  //     ROI: "13.7%",
-  //     Action: "Add Supply",
-  //   },
-  //   {
-  //     id: "5",
-  //     Pool: "DOT/WAS",
-  //     Composition: "",
-  //     "7d Volume": "$1M",
-  //     "24h Volume": "$456k",
-  //     Fee: "$35.23",
-  //     "Total Market Cap": "$15m",
-  //     ROI: "13.7%",
-  //     Action: "Add Supply",
-  //   },
-  //   {
-  //     id: "6",
-  //     Pool: "ENG/WAS",
-  //     Composition: "",
-  //     "7d Volume": "$1M",
-  //     "24h Volume": "$456k",
-  //     Fee: "$35.23",
-  //     "Total Market Cap": "$15m",
-  //     ROI: "13.7%",
-  //     Action: "Add Supply",
-  //   },
-  // ];
-
   const columns: ColumnDef<Pool>[] = [
     {
       accessorKey: "Pool",
@@ -487,11 +409,10 @@ const Page = () => {
       header: "Composition",
       cell: ({ row }) => {
         const pool: string = row.getValue("Pool");
-
         const [token1, token2] = pool.split("/");
         const Token1Icon = ({ token1 }: { token1: string | undefined }) => {
           switch (token1) {
-            case "PLY":
+            case "TestToken1":
               return (
                 <Image
                   width="20"
@@ -500,7 +421,7 @@ const Page = () => {
                   alt="polygonlogo"
                 />
               );
-            case "CBC":
+            case "TestToken2":
               return (
                 <Image
                   width="20"
@@ -509,7 +430,7 @@ const Page = () => {
                   alt="cnbclogo"
                 />
               );
-            case "CLY":
+            case "TestToken3":
               return (
                 <Image
                   width="20"
@@ -518,33 +439,33 @@ const Page = () => {
                   alt="clylogo"
                 />
               );
-            case "BLY":
-              return (
-                <Image
-                  width="20"
-                  height="20"
-                  src="/blylogo.svg"
-                  alt="blylogo"
-                />
-              );
-            case "DOT":
-              return (
-                <Image
-                  width="20"
-                  height="20"
-                  src="/dotlogo.svg"
-                  alt="dotlogo"
-                />
-              );
-            case "ENG":
-              return (
-                <Image
-                  width="20"
-                  height="20"
-                  src="/englogo.svg"
-                  alt="englogo"
-                />
-              );
+            // case "BLY":
+            //   return (
+            //     <Image
+            //       width="20"
+            //       height="20"
+            //       src="/blylogo.svg"
+            //       alt="blylogo"
+            //     />
+            //   );
+            // case "DOT":
+            //   return (
+            //     <Image
+            //       width="20"
+            //       height="20"
+            //       src="/dotlogo.svg"
+            //       alt="dotlogo"
+            //     />
+            //   );
+            // case "ENG":
+            //   return (
+            //     <Image
+            //       width="20"
+            //       height="20"
+            //       src="/englogo.svg"
+            //       alt="englogo"
+            //     />
+            //   );
             default:
               return null;
           }
@@ -552,22 +473,31 @@ const Page = () => {
 
         const Token2Icon = ({ token2 }: { token2: string | undefined }) => {
           switch (token2) {
-            case "WAS":
+            case "TestToken1":
               return (
                 <Image
                   width="20"
                   height="20"
-                  src="/weavelogo.svg"
-                  alt="weavelogo"
+                  src="/polygonlogo.svg"
+                  alt="polygonlogo"
                 />
               );
-            case "ETH":
+            case "TestToken2":
               return (
                 <Image
                   width="20"
                   height="20"
-                  src="/ethlogo.svg"
-                  alt="ethlogo"
+                  src="/cnbclogo.svg"
+                  alt="cnbclogo"
+                />
+              );
+            case "TestToken3":
+              return (
+                <Image
+                  width="20"
+                  height="20"
+                  src="/clylogo.svg"
+                  alt="clylogo"
                 />
               );
             default:
@@ -606,13 +536,24 @@ const Page = () => {
       accessorKey: "Action",
       header: "Action",
       cell: ({ row }) => {
+        // console.log("modal token1", asset);
+        const poolTokens: string = row.getValue("Pool");
+        const tokenNames = poolTokens.split("/");
+        const tokens =
+          pools.find(({ Pool }) => Pool == poolTokens)?.Tokens.split("/") || [];
+        const poolAddress = pools.find(
+          ({ Pool }) => Pool == poolTokens,
+        )?.poolAddress!;
+
+        console.log("poolAddress", poolAddress);
+
         const [tokenOne, setTokenOne] = useState<{
           name: string;
           address: string;
           value?: string;
         }>({
-          name: "",
-          address: "",
+          name: tokenNames[0] || "",
+          address: tokens?.[0] || "",
           value: "0",
         });
 
@@ -621,8 +562,8 @@ const Page = () => {
           address: string;
           value?: string;
         }>({
-          name: "",
-          address: "",
+          name: tokenNames[1] || "",
+          address: tokens?.[1] || "",
           value: "0",
         });
 
@@ -660,8 +601,6 @@ const Page = () => {
             functionName: "usdValue",
             args: [tokenB as `0x${string}`, parseEther(tokenTwo.value || "1n")],
           });
-
-        console.log("tokenTwoValue", tokenTwoValue);
 
         const {
           data: hash,
@@ -729,7 +668,7 @@ const Page = () => {
               address: tokenOne.address as `0x${string}`,
               abi: erc20Abi,
               functionName: "approve",
-              args: [pool, parseUnits("100", 10)],
+              args: [poolAddress, parseUnits("100", 10)],
             });
             toast.success("First asset approved succesfully");
           } catch (error) {
@@ -744,7 +683,7 @@ const Page = () => {
               address: tokenTwo.address as `0x${string}`,
               abi: erc20Abi,
               functionName: "approve",
-              args: [pool, parseUnits("100", 10)],
+              args: [poolAddress, parseUnits("100", 10)],
             });
             toast.success("Second asset approved succesfully");
           } catch (error) {
@@ -756,15 +695,14 @@ const Page = () => {
         const handleCreatePool = async () => {
           try {
             await writeContractAsync({
-              abi: poolAbi,
-              address: pool,
-              functionName: "createPool",
+              abi: liquidityPoolAbi,
+              address: poolAddress,
+              functionName: "addLiquidity",
               account: address,
               args: [
                 tokenOne.address as `0x${string}`,
                 tokenTwo.address as `0x${string}`,
                 parseEther(tokenOne.value!),
-                parseEther(tokenTwo.value!),
               ],
               // value: parseEther(fee.toString()),
             });
@@ -811,7 +749,6 @@ const Page = () => {
         //   }
         // };
 
-        console.log("tokenTwoValue", tokenTwoValue);
         useEffect(() => {
           if (isCreated) {
             toast.success("Pool created succesfully");
@@ -842,11 +779,12 @@ const Page = () => {
                 </div>
                 <div className="rounded-md bg-grey-1/30 p-4">
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-3">
                       <p className="text-sm font-semibold text-grey-1">
                         First asset
                       </p>
-                      <Select
+                      <p>{tokenOne.name}</p>
+                      {/* <Select
                         inputId="tokenOne"
                         option={tokenOptions.filter(
                           (tokenOption) =>
@@ -860,7 +798,7 @@ const Page = () => {
                             value: "0",
                           });
                         }}
-                      />
+                      /> */}
                     </span>
                     <span className="flex items-center gap-1">
                       <p className="text-sm font-semibold text-grey-1">
@@ -912,25 +850,11 @@ const Page = () => {
                 </div>
                 <div className="rounded-md bg-grey-1/30 p-4">
                   <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-3">
                       <p className="text-sm font-semibold text-grey-1">
                         Second asset
                       </p>
-                      <Select
-                        inputId="tokenOne"
-                        option={tokenOptions.filter(
-                          (tokenOption) =>
-                            tokenOption.value !== tokenOne.address,
-                        )}
-                        onChange={(option) => {
-                          console.log(option?.value);
-                          setTokenTwo({
-                            name: option?.label!,
-                            address: option?.value!,
-                            value: "0",
-                          });
-                        }}
-                      />
+                      <p>{tokenTwo.name}</p>
                     </span>
                     <span className="flex items-center gap-1">
                       <p className="text-sm font-semibold text-grey-1">
@@ -1016,7 +940,7 @@ const Page = () => {
                     : isFirstTokenApproving
                       ? "Aproving First Asset"
                       : isPending
-                        ? "Conform Pool Creation..."
+                        ? "Confirm Pool Supply..."
                         : isSecondTokenPending
                           ? "Confirm Second Asset Approval..."
                           : isFirstTokenPending
