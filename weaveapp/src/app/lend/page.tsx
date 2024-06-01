@@ -43,11 +43,6 @@ type Asset = {
   Action: string;
 };
 
-const lendContract = {
-  abi: lendingTrackerAbi,
-  address: lendingTracker,
-} as const;
-
 // const lendingPoolContract = {
 //   abi: lendingPoolAbi,
 //   address: pooldetail?.[0] as `0x${string}`,

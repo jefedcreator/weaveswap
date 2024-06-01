@@ -2,8 +2,6 @@
 import { DataTable, Header } from "@/components";
 import {
   Tokens,
-  pool,
-  poolAbi,
   poolMetrics,
   poolMetricsAbi,
   poolTracker,
@@ -16,6 +14,8 @@ import { liquidityPoolAbi } from "@/constants/abis";
 import { Button, Input, Modal } from "@/primitives";
 import { formatNumber } from "@/utils";
 import { ColumnDef } from "@tanstack/react-table";
+import { createConfig, http } from "@wagmi/core";
+import { baseSepolia } from "@wagmi/core/chains";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -26,6 +26,14 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
+import { readContract } from "@wagmi/core";
+
+const config = createConfig({
+  chains: [baseSepolia],
+  transports: {
+    [baseSepolia.id]: http(),
+  },
+});
 
 type Pool = {
   id: string;
@@ -50,35 +58,22 @@ const Page = () => {
     functionName: "getPools",
   });
 
-  const {
-    data: tokenAAllowance,
-    // isLoading: isTokenCLoading,
-  } = useReadContract({
-    address: tokenA,
-    abi: erc20Abi,
-    functionName: "allowance",
-    args: [address as `0x${string}`, pool],
-  });
-
-  const {
-    data: tokenBAllowance,
-    // isLoading: isTokenCLoading,
-  } = useReadContract({
-    address: tokenB,
-    abi: erc20Abi,
-    functionName: "allowance",
-    args: [address as `0x${string}`, pool],
-  });
-
-  const {
-    data: tokenCAllowance,
-    // isLoading: isTokenCLoading,
-  } = useReadContract({
-    address: tokenC,
-    abi: erc20Abi,
-    functionName: "allowance",
-    args: [address as `0x${string}`, pool],
-  });
+  const getPoolAllowance = async ({
+    token,
+    pool,
+  }: {
+    token: `0x${string}`;
+    pool: `0x${string}`;
+  }) => {
+    if (!address) return;
+    const result = await readContract(config, {
+      abi: erc20Abi,
+      address: token,
+      functionName: "allowance",
+      args: [address, pool],
+    });
+    return result;
+  };
 
   const {
     data: poolOneAssetOneAddress,
@@ -205,7 +200,6 @@ const Page = () => {
     abi: liquidityPoolAbi,
     functionName: "swapFee",
   });
-  console.log("getPools?.[1]", getPools?.[1]);
 
   const {
     data: poolThreeFee,
@@ -375,16 +369,6 @@ const Page = () => {
     return tokenAllowances[pool] || null;
   };
 
-  const getTokenAllowance = (token: Tokens) => {
-    let tokenAllowances = {
-      [tokenA]: formatEther(BigInt(tokenAAllowance || 0)),
-      [tokenB]: formatEther(BigInt(tokenBAllowance || 0)),
-      [tokenC]: formatEther(BigInt(tokenCAllowance || 0)),
-    };
-
-    return tokenAllowances[token] || "0";
-  };
-
   const pools: Pool[] = useMemo(() => {
     if (!getPools) return [];
     return getPools
@@ -536,7 +520,6 @@ const Page = () => {
       accessorKey: "Action",
       header: "Action",
       cell: ({ row }) => {
-        // console.log("modal token1", asset);
         const poolTokens: string = row.getValue("Pool");
         const tokenNames = poolTokens.split("/");
         const tokens =
@@ -545,27 +528,17 @@ const Page = () => {
           ({ Pool }) => Pool == poolTokens,
         )?.poolAddress!;
 
-        console.log("poolAddress", poolAddress);
-
-        const [tokenOne, setTokenOne] = useState<{
-          name: string;
-          address: string;
-          value?: string;
-        }>({
+        const tokenOne = {
           name: tokenNames[0] || "",
           address: tokens?.[0] || "",
-          value: "0",
-        });
+        };
 
-        const [tokenTwo, setTokenTwo] = useState<{
-          name: string;
-          address: string;
-          value?: string;
-        }>({
+        const tokenTwo = {
           name: tokenNames[1] || "",
           address: tokens?.[1] || "",
-          value: "0",
-        });
+        };
+
+        const [supplyValue, setSupplyValue] = useState("0");
 
         const { data: tokenOneBalance, refetch: refetchTokenIn } =
           useReadContract({
@@ -590,7 +563,7 @@ const Page = () => {
             functionName: "usdValue",
             args: [
               tokenOne.address as `0x${string}`,
-              parseEther(tokenOne.value || "0n"),
+              parseEther(supplyValue || "0"),
             ],
           });
 
@@ -599,7 +572,7 @@ const Page = () => {
             abi: poolMetricsAbi,
             address: poolMetrics,
             functionName: "usdValue",
-            args: [tokenB as `0x${string}`, parseEther(tokenTwo.value || "1n")],
+            args: [tokenB as `0x${string}`, parseEther(supplyValue || "0")],
           });
 
         const {
@@ -639,26 +612,41 @@ const Page = () => {
           hash: secondTokenApproveHash,
         });
 
-        // const handleCreatePool = async () => {
-        //   try {
-        //   } catch (error) {}
-        // };
+        const handleClick = async () => {
+          try {
+            const allowance1Promise = getPoolAllowance({
+              token: tokenOne.address as `0x${string}`,
+              pool: poolAddress,
+            });
+            const allowance2Promise = getPoolAllowance({
+              token: tokenTwo.address as `0x${string}`,
+              pool: poolAddress,
+            });
 
-        const handleClick = () => {
-          const allowance1 = getTokenAllowance(tokenOne.address as Tokens);
-          const allowance2 = getTokenAllowance(tokenTwo.address as Tokens);
-          if (
-            parseFloat(allowance1) <
-            parseFloat(tokenOne?.value?.toString() || "0")
-          ) {
-            handleFirstApprove();
-          } else if (
-            parseFloat(allowance2) <
-            parseFloat(tokenTwo?.value?.toString() || "0")
-          ) {
-            handleSecondApprove();
-          } else {
-            handleCreatePool();
+            const [allowance1, allowance2] = await Promise.all([
+              allowance1Promise,
+              allowance2Promise,
+            ]);
+
+            const allowance1Formatted = parseFloat(
+              formatEther(BigInt(allowance1 || 0)),
+            );
+            const allowance2Formatted = parseFloat(
+              formatEther(BigInt(allowance2 || 0)),
+            );
+
+            const tokenOneValue = parseFloat(supplyValue.toString() || "0");
+            const tokenTwoValue = parseFloat(supplyValue.toString() || "0");
+
+            if (allowance1Formatted < tokenOneValue) {
+              handleFirstApprove();
+            } else if (allowance2Formatted < tokenTwoValue) {
+              handleSecondApprove();
+            } else {
+              handleAddLiquidity();
+            }
+          } catch (error) {
+            console.error("Error handling click:", error);
           }
         };
 
@@ -692,7 +680,7 @@ const Page = () => {
           }
         };
 
-        const handleCreatePool = async () => {
+        const handleAddLiquidity = async () => {
           try {
             await writeContractAsync({
               abi: liquidityPoolAbi,
@@ -702,12 +690,10 @@ const Page = () => {
               args: [
                 tokenOne.address as `0x${string}`,
                 tokenTwo.address as `0x${string}`,
-                parseEther(tokenOne.value!),
+                parseEther(supplyValue),
               ],
               // value: parseEther(fee.toString()),
             });
-            // if (isConfirmed) {
-            // }
           } catch (error) {
             console.error(error);
             toast.error("An error occured");
@@ -751,7 +737,7 @@ const Page = () => {
 
         useEffect(() => {
           if (isCreated) {
-            toast.success("Pool created succesfully");
+            toast.success("Pool liquidity added succesfully");
           }
         }, [isCreated]);
 
@@ -763,7 +749,7 @@ const Page = () => {
 
         useEffect(() => {
           if (isSecondTokenSuccess) {
-            handleCreatePool();
+            handleAddLiquidity();
           }
         }, [isSecondTokenSuccess]);
 
@@ -784,21 +770,6 @@ const Page = () => {
                         First asset
                       </p>
                       <p>{tokenOne.name}</p>
-                      {/* <Select
-                        inputId="tokenOne"
-                        option={tokenOptions.filter(
-                          (tokenOption) =>
-                            tokenOption.value !== tokenTwo.address,
-                        )}
-                        onChange={(option) => {
-                          console.log(option?.value);
-                          setTokenOne({
-                            name: option?.label!,
-                            address: option?.value!,
-                            value: "0",
-                          });
-                        }}
-                      /> */}
                     </span>
                     <span className="flex items-center gap-1">
                       <p className="text-sm font-semibold text-grey-1">
@@ -809,7 +780,14 @@ const Page = () => {
                           formatEther(tokenOneBalance ?? BigInt(0)),
                         ).toFixed(2)}
                       </p>
-                      <Button variant="primary" className="h-3.5 w-5">
+                      <Button
+                        variant="primary"
+                        className="h-3.5 w-5"
+                        onClick={() =>
+                          tokenOneBalance &&
+                          setSupplyValue(tokenOneBalance.toString())
+                        }
+                      >
                         Max
                       </Button>
                     </span>
@@ -820,15 +798,8 @@ const Page = () => {
                       <Input
                         id="tokenOneValue"
                         type="number"
-                        value={tokenOne.value}
-                        onChange={(e) =>
-                          setTokenOne((prev) => {
-                            return {
-                              ...prev,
-                              value: e.target.value,
-                            };
-                          })
-                        }
+                        value={supplyValue}
+                        onChange={(e) => setSupplyValue(e.target.value)}
                       />
                       <p className="text-sm font-semibold text-grey-1">
                         (
@@ -865,7 +836,14 @@ const Page = () => {
                           formatEther(tokenTwoBalance ?? BigInt(0)),
                         ).toFixed(2)}
                       </p>
-                      <Button variant="primary" className="h-3.5 w-5">
+                      <Button
+                        variant="primary"
+                        className="h-3.5 w-5"
+                        onClick={() =>
+                          tokenTwoBalance &&
+                          setSupplyValue(tokenTwoBalance.toString())
+                        }
+                      >
                         Max
                       </Button>
                     </span>
@@ -876,15 +854,8 @@ const Page = () => {
                       <Input
                         id="tokenTwoValue"
                         type="number"
-                        value={tokenTwo.value}
-                        onChange={(e) =>
-                          setTokenTwo((prev) => {
-                            return {
-                              ...prev,
-                              value: e.target.value,
-                            };
-                          })
-                        }
+                        value={supplyValue}
+                        onChange={(e) => setSupplyValue(e.target.value)}
                       />
                       <p className="text-sm font-semibold text-grey-1">
                         (

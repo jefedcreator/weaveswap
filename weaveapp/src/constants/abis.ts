@@ -2751,34 +2751,6 @@ const liquidityPoolAbi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "uint16",
-        name: "srcChainId",
-        type: "uint16",
-      },
-      {
-        internalType: "address",
-        name: "srcAddress",
-        type: "address",
-      },
-      {
-        internalType: "uint64",
-        name: "nonce",
-        type: "uint64",
-      },
-      {
-        internalType: "bytes",
-        name: "payload",
-        type: "bytes",
-      },
-    ],
-    name: "zkReceive",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     stateMutability: "payable",
     type: "receive",
   },
