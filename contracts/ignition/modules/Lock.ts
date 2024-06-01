@@ -11,7 +11,7 @@ const LockModule = buildModule("LockModule", (m) => {
   const lock = m.contract("Lock", [unlockTime], {
     value: lockedAmount,
   });
-m.
+
   return { lock };
 });
 

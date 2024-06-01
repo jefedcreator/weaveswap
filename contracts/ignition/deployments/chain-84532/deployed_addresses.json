@@ -1,13 +1,14 @@
 {
-  "TestToken1#TestToken1": "0x5457314F82E14EeEA3d3006A6aDa25c4e67DAdC1",
-  "TestToken3#TestToken3": "0x9D351eec82d3E04382e9de9f716bCA565314e588",
-  "lendingTracker#LendingTracker": "0x5b51E486a54d689B593B3FEB650930A635a6091c",
-  "priceAggregator#priceAggregator1": "0xCB07935433285F2ECd8A4814A2c5FFBD70D99a81",
-  "priceAggregator#priceAggregator2": "0xaB28eA8f8E5022f061D32a037e980Fa7f1256877",
-  "priceAggregator#priceAggregator3": "0x9A84d7bFB3Cd5De028CD13cfB0f44F83486C545a",
-  "yieldCalculator#YieldCalculator": "0xA34cDAD2b573A25aa8C9414F20bbaAF6887Ab0A6",
-  "TestToken2#TestToken2": "0x1AC17eC6C39cDc41138Bcb82732A28dAcb277D14",
-  "poolTracker#PoolTracker": "0x51151011776409D143419fe2cB9d4F81301FaF5a",
-  "swapRouter#SwapRouter": "0x7976D5A1829D03FaA1DecAa939F643B196FEdFf2",
-  "borrowingTracker#BorrowingTracker": "0xDBcD06FaB5CaB257159dd948a8eD44efe1fC5452"
+  "TestToken1#TestToken1": "0x73De41a12B9D7081518da74B00DBBD755775aA92",
+  "TestToken2#TestToken2": "0x4448ff619f022d0774Ad89bBCeb8CB91af373f12",
+  "TestToken3#TestToken3": "0x8fA6730322ca2bfaA150AeC3467ecCc2f14e515F",
+  "lendingTracker#LendingTracker": "0x5d388100E1830c09490c729b4189BC37A32A75a1",
+  "priceAggregator#priceAggregator1": "0x9fEB3D2609BD05C8D79A6EE01d738e212C87BF41",
+  "priceAggregator#priceAggregator2": "0x72358948eda712f71635e4908d73A92B5e467D67",
+  "priceAggregator#priceAggregator3": "0x23e20db9650E1a2C20168b950562576079Ba9d53",
+  "yieldCalculator#YieldCalculator": "0x72a44eeefe2f0CBD3345065d16fb5798F9BF5519",
+  "poolTracker#PoolTracker": "0x2D29c5A4b7a8d0149f9256871158e9737D880D6a",
+  "swapRouter#SwapRouter": "0x1B835fADad526de898979a339B50a3064B609e2E",
+  "borrowingTracker#BorrowingTracker": "0xE048C50805738ceb84F0B1450b7308Ef414818E0",
+  "poolMetrics#PoolMetrics": "0x5A785E1a6c3C923bBb0F4Ad9eaE24fCc170d0637"
 }

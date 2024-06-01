@@ -5,6 +5,9 @@ import SwapRouterModule from "./SwapRouter";
 import TestToken1Module from "./TestToken1";
 import TestToken2Module from "./TestToken2";
 import TestToken3Module from "./TestToken3";
+import PoolTrackerModule from "./PoolTracker";
+
+const zkBridge = "0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7";
 
 const BorrowingTrackerModule = buildModule("borrowingTracker", (m) => {
   const { swapRouter } = m.useModule(SwapRouterModule);
@@ -15,11 +18,21 @@ const BorrowingTrackerModule = buildModule("borrowingTracker", (m) => {
   const { token1 } = m.useModule(TestToken1Module);
   const { token2 } = m.useModule(TestToken2Module);
   const { token3 } = m.useModule(TestToken3Module);
+  const bridge = m.getParameter("zkBridge", zkBridge);
+  const { poolTracker } = m.useModule(PoolTrackerModule);
 
   const borrowingTracker = m.contract("BorrowingTracker", [
     lendingTracker,
     swapRouter,
   ]);
+
+  // const poolMetrics = m.contract("PoolMetrics", [
+  //   poolTracker,
+  //   bridge,
+  //   swapRouter,
+  // ]);
+
+  // m.contract("PoolMetrics", [poolTracker, bridge, swapRouter]);
 
   const addBorrowingContract = m.call(
     lendingTracker,
