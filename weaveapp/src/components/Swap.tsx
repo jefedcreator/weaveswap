@@ -6,11 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FaClockRotateLeft } from "react-icons/fa6";
 import { IoMdArrowDropdown, IoMdSettings } from "react-icons/io";
 import { toast } from "sonner";
-import {
-  erc20Abi,
-  formatEther,
-  parseEther
-} from "viem";
+import { erc20Abi, formatEther, parseEther } from "viem";
 import {
   useAccount,
   useEstimateFeesPerGas,
@@ -66,8 +62,8 @@ const Swap = () => {
     functionName: "getSwapAmount",
     account: address,
     args: [
-      tokenIn.address,
-      tokenOut.address,
+      tokenIn.address as `0x${string}`,
+      tokenOut.address as `0x${string}`,
       parseEther(inputAmount.toString()),
     ],
   });
@@ -77,10 +73,10 @@ const Swap = () => {
     address: swap,
     functionName: "getSwapFee",
     account: address,
-    args: [tokenIn.address, tokenOut.address],
+    args: [tokenIn.address as `0x${string}`, tokenOut.address as `0x${string}`],
   });
 
-  const fee: bigint = useMemo(() => BigInt(swapFee as any|| 0), [swapFee]);
+  const fee: bigint = useMemo(() => BigInt((swapFee as any) || 0), [swapFee]);
 
   const { data: tokenInBalance, refetch: refetchTokenIn } = useReadContract({
     address: tokenIn.address as `0x${string}`,
@@ -94,15 +90,6 @@ const Swap = () => {
     abi: erc20Abi,
     functionName: "balanceOf",
     args: [address as `0x${string}`],
-  });
-
-  const { data: simulatedData, error: simulatedError } = useSimulateContract({
-    abi: swapAbi,
-    address: swap,
-    functionName: "swapAsset",
-    account: address,
-    args: [tokenIn.address, tokenOut.address, inputAmount],
-    value: parseEther(fee.toString()),
   });
 
   const {
@@ -122,10 +109,6 @@ const Swap = () => {
 
   console.log("outputAmount", Number(outputAmount));
 
-  console.log("simulatedData", simulatedData);
-
-  console.log("simulatedError", simulatedError);
-
   console.log("swapFee", swapFee);
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -135,23 +118,27 @@ const Swap = () => {
 
   const handleSwap = async () => {
     try {
-      await writeContractAsync({
+      const result = await writeContractAsync({
         abi: swapAbi,
         address: swap,
         functionName: "swapAsset",
         account: address,
-        args: [tokenIn.address, tokenOut.address, inputAmount],
+        args: [
+          tokenIn.address as `0x${string}`,
+          tokenOut.address as `0x${string}`,
+          parseEther(inputAmount?.toString() || "0"),
+        ],
         value: parseEther(fee.toString()),
       });
-    
-      // if (isConfirmed) {
-      // }
+      if (result) {
+        toast.success("Swap successful");
+      }
     } catch (error) {
-      toast.error("An error occured");
+      console.error("Error during swap:", error);
+      toast.error("An error occurred during the swap");
     }
   };
 
-  // console.log("estimated gas", result);
   useEffect(() => {
     // if (tokenIn && tokenOut && inputAmount && outputAmount) {
     // writeContract({
