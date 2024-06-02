@@ -5,7 +5,7 @@ import {
   poolMetricsAbi,
   poolTracker,
   poolTrackerAbi,
-  tokenB
+  tokenB,
 } from "@/constants";
 import { liquidityPoolAbi } from "@/constants/abis";
 import { Button, Input, Modal } from "@/primitives";
@@ -23,8 +23,6 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-
-
 
 type Pool = {
   id: string;
@@ -511,6 +509,11 @@ const Page = () => {
       accessorKey: "Action",
       header: "Action",
       cell: ({ row }) => {
+        const [isModalOpen, setIsModalOpen] = useState(false);
+
+        const handleIsModal = () => {
+          setIsModalOpen((prev) => !prev);
+        };
         const poolTokens: string = row.getValue("Pool");
         const tokenNames = poolTokens.split("/");
         const tokens =
@@ -685,6 +688,7 @@ const Page = () => {
               ],
               // value: parseEther(fee.toString()),
             });
+            handleIsModal();
           } catch (error) {
             console.error(error);
             toast.error("An error occured");
@@ -745,7 +749,7 @@ const Page = () => {
         }, [isSecondTokenSuccess]);
 
         return (
-          <Modal>
+          <Modal open={isModalOpen} onOpenChange={handleIsModal}>
             <Modal.Button asChild>
               <Button variant="primary">Add Supply</Button>
             </Modal.Button>
@@ -802,10 +806,10 @@ const Page = () => {
                       <Image
                         height={20}
                         width={20}
-                        src="/ethlogo.svg"
-                        alt="ethlogo"
+                        src="/base.svg"
+                        alt="baselogo"
                       />
-                      <p className="text-2xl">Ethereum</p>
+                      <p className="text-2xl">Base</p>
                       {/* <IoMdArrowDropdown /> */}
                     </span>
                   </div>
@@ -858,10 +862,10 @@ const Page = () => {
                       <Image
                         height={20}
                         width={20}
-                        src="/ethlogo.svg"
-                        alt="ethlogo"
+                        src="/base.svg"
+                        alt="baselogo"
                       />
-                      <p className="text-2xl">Ethereum</p>
+                      <p className="text-2xl">Base</p>
                       {/* <IoMdArrowDropdown /> */}
                     </span>
                   </div>

@@ -726,8 +726,8 @@ const Lend = () => {
                         <Image
                           height={20}
                           width={20}
-                          src="/ethlogo.svg"
-                          alt="ethlogo"
+                          src="/base.svg"
+                          alt="baselogo"
                         />
                         <p className="text-2xl">Ethereum</p>
                         {/* <IoMdArrowDropdown /> */}
@@ -780,8 +780,8 @@ const Lend = () => {
                           <Image
                             height={20}
                             width={20}
-                            src="/ethlogo.svg"
-                            alt="ethlogo"
+                            src="/base.svg"
+                            alt="baselogo"
                           />
                           <p className="text-2xl">Ethereum</p>
                           {/* <IoMdArrowDropdown /> */}
@@ -880,10 +880,12 @@ const Lend = () => {
             Total Supply
           </span>
           <p className="text-2xl">{`$${
-            totalLent ? parseInt(formatEther(totalLent))?.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            }) : 0
+            totalLent
+              ? parseInt(formatEther(totalLent))?.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              : 0
           }`}</p>
         </div>
         <hr className="h-full w-[1px] bg-grey-2" />
@@ -901,10 +903,15 @@ const Lend = () => {
             Total Borrow
           </span>
           <p className="text-2xl">{`$${
-            totalBorrowed ? parseInt(formatEther(totalBorrowed))?.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            }) : 0
+            totalBorrowed
+              ? parseInt(formatEther(totalBorrowed))?.toLocaleString(
+                  undefined,
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  },
+                )
+              : 0
           }`}</p>
         </div>
       </div>

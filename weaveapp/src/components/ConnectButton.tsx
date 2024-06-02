@@ -102,7 +102,7 @@ export const WalletConnectButton = ({
                       </div>
                     </div>
                     <div
-                      className="mt-1 flex cursor-pointer items-center gap-2 text-xs font-bold text-black dark:text-white"
+                      className="mt-1 flex cursor-pointer items-center gap-2 text-xs font-bold text-white dark:text-white"
                       onClick={openChainModal}
                     >
                       {chain.name} <FaChevronDown width="14" height="14" />

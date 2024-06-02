@@ -7,6 +7,7 @@ import { FaDiscord, FaLinkedin, FaTelegram, FaXTwitter } from "react-icons/fa6";
 import { HiOutlineSignal } from "react-icons/hi2";
 import { IoShieldCheckmarkOutline } from "react-icons/io5";
 import { VscTools } from "react-icons/vsc";
+import Link from "next/link";
 
 const features = [
   {
@@ -35,7 +36,7 @@ export default function HomePage() {
   return (
     <main className="flex flex-col items-center font-khand text-white">
       <div className="w-full">
-        <div className="flex h-screen flex-col justify-between bg-background1 bg-cover bg-center  bg-no-repeat p-10">
+        <div className="flex h-screen flex-col justify-between bg-[#030C1A] bg-cover bg-center  bg-no-repeat p-10">
           <Header />
           <div className="flex  w-2/3 flex-col items-center justify-center gap-5 self-center text-center">
             <AnimatedText
@@ -48,10 +49,12 @@ export default function HomePage() {
               Welcome to waveswap where blockchain meet simplicity, seamlessly
               exchange assets across different chains with cofidence and ease
             </p>
-            <Button variant="secondary" className="flex text-black">
-              <span>Get started</span>
-              <FaArrowCircleRight />
-            </Button>
+            <Link href="/swap">
+              <Button variant="secondary" className="flex text-black">
+                <span>Get started</span>
+                <FaArrowCircleRight />
+              </Button>
+            </Link>
           </div>
           <div className="flex items-center justify-between justify-self-end rounded-md border-[0.5px] border-[#878787] p-8">
             {features.map((feature) => {

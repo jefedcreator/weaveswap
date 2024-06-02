@@ -330,7 +330,13 @@ const Swap = () => {
             <span className="flex items-center gap-1">
               <p className="text-sm font-semibold text-grey-1">Wallet Bal</p>
               <p>{formatEther(tokenInBalance ?? BigInt(0))}</p>
-              <Button variant="primary" className="h-3.5 w-5">
+              <Button
+                variant="primary"
+                className="h-3.5 w-5"
+                onClick={() =>
+                  tokenInBalance && setInputAmount(tokenInBalance?.toString())
+                }
+              >
                 Max
               </Button>
             </span>
@@ -342,13 +348,19 @@ const Swap = () => {
                 id="valueIn"
                 type="number"
                 defaultValue={0}
+                value={inputAmount}
                 onChange={(e) => setInputAmount(e.target.value)}
               />
               <p className="text-sm font-semibold text-grey-1">($4602.43)</p>
             </span>
             <span className="flex items-center gap-1">
-              <Image height={20} width={20} src="/ethlogo.svg" alt="ethlogo" />
-              <p className="text-2xl">Ethereum</p>
+              <Image
+                height={20}
+                width={20}
+                src="/weavelogo.svg"
+                alt="weavelogo"
+              />
+              <p className="text-2xl">{tokenIn.name}</p>
               <IoMdArrowDropdown />
             </span>
           </div>
@@ -419,7 +431,7 @@ const Swap = () => {
                 src="/weavelogo.svg"
                 alt="weavelogo"
               />
-              <p className="text-2xl">Weaves</p>
+              <p className="text-2xl">{tokenOut.name}</p>
               <IoMdArrowDropdown />
             </span>
           </div>
