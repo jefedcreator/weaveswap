@@ -1,21 +1,18 @@
 "use client";
 import { DataTable, Header } from "@/components";
 import {
-  Tokens,
   poolMetrics,
   poolMetricsAbi,
   poolTracker,
   poolTrackerAbi,
-  tokenA,
-  tokenB,
-  tokenC,
+  tokenB
 } from "@/constants";
 import { liquidityPoolAbi } from "@/constants/abis";
 import { Button, Input, Modal } from "@/primitives";
+import { config } from "@/providers";
 import { formatNumber } from "@/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { createConfig, http } from "@wagmi/core";
-import { baseSepolia } from "@wagmi/core/chains";
+import { readContract } from "@wagmi/core";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -26,14 +23,8 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { readContract } from "@wagmi/core";
 
-const config = createConfig({
-  chains: [baseSepolia],
-  transports: {
-    [baseSepolia.id]: http(),
-  },
-});
+
 
 type Pool = {
   id: string;
@@ -902,7 +893,8 @@ const Page = () => {
                     isFirstTokenPending ||
                     isSecondTokenPending ||
                     isFirstTokenApproving ||
-                    isSecondTokenApproving
+                    isSecondTokenApproving ||
+                    !address
                   }
                   onClick={handleClick}
                 >

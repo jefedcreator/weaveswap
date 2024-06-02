@@ -1,23 +1,23 @@
 "use client";
 import { swap, swapAbi, tokenA, tokenB, tokenC } from "@/constants";
 import { Button, Input, Select } from "@/primitives";
+import { config } from "@/providers";
+import { readContract } from "@wagmi/core";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaClockRotateLeft } from "react-icons/fa6";
 import { IoMdArrowDropdown, IoMdSettings } from "react-icons/io";
 import { toast } from "sonner";
-import { erc20Abi, formatEther, parseEther } from "viem";
+import { erc20Abi, formatEther, parseEther, parseUnits } from "viem";
 import {
   useAccount,
   useEstimateFeesPerGas,
   useReadContract,
-  useSimulateContract,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
 
 const Swap = () => {
-  //   const { usdRates } = useContext(USDRatesContext);
   const { address } = useAccount();
   const [inputAmount, setInputAmount] = useState<number | string>(0);
   const [isMoreTokens0, setIsMoreTokens0] = useState(false);
@@ -41,7 +41,6 @@ const Swap = () => {
   const [tokenIn, setTokenIn] = useState<{
     name: string;
     address: string;
-    value?: string;
   }>({
     name: "",
     address: "",
@@ -50,7 +49,6 @@ const Swap = () => {
   const [tokenOut, setTokenOut] = useState<{
     name: string;
     address: string;
-    value?: string;
   }>({
     name: "",
     address: "",
@@ -76,8 +74,6 @@ const Swap = () => {
     args: [tokenIn.address as `0x${string}`, tokenOut.address as `0x${string}`],
   });
 
-  const fee: bigint = useMemo(() => BigInt((swapFee as any) || 0), [swapFee]);
-
   const { data: tokenInBalance, refetch: refetchTokenIn } = useReadContract({
     address: tokenIn.address as `0x${string}`,
     abi: erc20Abi,
@@ -99,22 +95,119 @@ const Swap = () => {
     writeContractAsync,
   } = useWriteContract();
 
+  const {
+    data: firstTokenApproveHash,
+    isPending: isFirstTokenPending,
+    writeContractAsync: writeFirstTokenApprove,
+  } = useWriteContract();
+
+  const {
+    data: secondTokenApproveHash,
+    isPending: isSecondTokenPending,
+    writeContractAsync: writeSecondTokenApprove,
+  } = useWriteContract();
+
+  const getPoolAllowance = async ({
+    token,
+    pool,
+  }: {
+    token: `0x${string}`;
+    pool: `0x${string}`;
+  }) => {
+    if (!address) return;
+    const result = await readContract(config, {
+      abi: erc20Abi,
+      address: token,
+      functionName: "allowance",
+      args: [address, pool],
+    });
+    return result;
+  };
+
   const estimatedGas = useEstimateFeesPerGas();
-
-  console.log("swap details:", tokenInBalance, tokenOutBalance);
-
-  console.log("tokens:", tokenIn, tokenOut);
-
-  console.log("input amount:", inputAmount);
-
-  console.log("outputAmount", Number(outputAmount));
-
-  console.log("swapFee", swapFee);
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
       hash,
     });
+
+  const { isLoading: isFirstTokenApproving, isSuccess: isFirstTokenSuccess } =
+    useWaitForTransactionReceipt({
+      hash: firstTokenApproveHash,
+    });
+
+  const { isLoading: isSecondTokenApproving, isSuccess: isSecondTokenSuccess } =
+    useWaitForTransactionReceipt({
+      hash: secondTokenApproveHash,
+    });
+
+  const handleFirstApprove = async () => {
+    try {
+      await writeFirstTokenApprove({
+        address: tokenIn.address as `0x${string}`,
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [swap, parseUnits("100", 10)],
+      });
+      toast.success("First asset approved succesfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occured");
+    }
+  };
+
+  const handleSecondApprove = async () => {
+    try {
+      await writeSecondTokenApprove({
+        address: tokenOut.address as `0x${string}`,
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [swap, parseUnits("100", 10)],
+      });
+      toast.success("Second asset approved succesfully");
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occured");
+    }
+  };
+
+  const handleClick = async () => {
+    try {
+      const allowance1Promise = getPoolAllowance({
+        token: tokenIn.address as `0x${string}`,
+        pool: swap,
+      });
+      const allowance2Promise = getPoolAllowance({
+        token: tokenOut.address as `0x${string}`,
+        pool: swap,
+      });
+
+      const [allowance1, allowance2] = await Promise.all([
+        allowance1Promise,
+        allowance2Promise,
+      ]);
+
+      const allowance1Formatted = parseFloat(
+        formatEther(BigInt(allowance1 || 0)),
+      );
+      const allowance2Formatted = parseFloat(
+        formatEther(BigInt(allowance2 || 0)),
+      );
+
+      const tokenOneValue = parseFloat(inputAmount.toString() || "0");
+      const tokenTwoValue = parseFloat(inputAmount?.toString() || "0");
+
+      if (allowance1Formatted < tokenOneValue) {
+        handleFirstApprove();
+      } else if (allowance2Formatted < tokenTwoValue) {
+        handleSecondApprove();
+      } else {
+        handleSwap();
+      }
+    } catch (error) {
+      console.error("Error handling click:", error);
+    }
+  };
 
   const handleSwap = async () => {
     try {
@@ -128,7 +221,7 @@ const Swap = () => {
           tokenOut.address as `0x${string}`,
           parseEther(inputAmount?.toString() || "0"),
         ],
-        value: parseEther(fee.toString()),
+        value: BigInt(swapFee?.toString() || "0"),
       });
       if (result) {
         toast.success("Swap successful");
@@ -155,6 +248,18 @@ const Swap = () => {
     // });
     // }
   }, [tokenIn, tokenOut, inputAmount, outputAmount]);
+
+  useEffect(() => {
+    if (isFirstTokenSuccess) {
+      handleSecondApprove();
+    }
+  }, [isFirstTokenSuccess]);
+
+  useEffect(() => {
+    if (isSecondTokenSuccess) {
+      handleSwap();
+    }
+  }, [isSecondTokenSuccess]);
 
   useEffect(() => {
     if (isConfirmed) {
@@ -326,9 +431,9 @@ const Swap = () => {
               <span className="flex items-center justify-between">
                 <p className="text-grey-1">Exchange rate</p>
                 <p>
-                  1 {tokenIn.name} on BNB =
+                  1 {tokenIn.name} on ETH =
                   {Number(outputAmount) / Number(inputAmount)} {tokenOut.name}{" "}
-                  on BNB
+                  on ETH
                 </p>
               </span>
               <span className="flex items-center justify-between">
@@ -337,7 +442,7 @@ const Swap = () => {
               </span>
               <span className="flex items-center justify-between">
                 <p className="text-grey-1">Gas Fee</p>
-                <p>{`${formatEther(fee)} BNB`}</p>
+                <p>{`${formatEther(swapFee || 0n)} ETH`}</p>
               </span>
             </div>
           </div>
@@ -345,10 +450,30 @@ const Swap = () => {
         <Button
           className="w-full font-bold"
           variant="primary"
-          disabled={isLoading || isPending || isConfirming}
-          onClick={handleSwap}
+          disabled={
+            isLoading ||
+            isPending ||
+            isConfirming ||
+            !address ||
+            isFirstTokenPending ||
+            isSecondTokenPending ||
+            isFirstTokenApproving ||
+            isSecondTokenApproving ||
+            !tokenIn.address
+          }
+          onClick={handleClick}
         >
-          Swap
+          {isSecondTokenApproving
+            ? "Aproving Second Asset"
+            : isFirstTokenApproving
+              ? "Aproving First Asset"
+              : isPending
+                ? "Confirm Swap..."
+                : isSecondTokenPending
+                  ? "Confirm Second Asset Approval..."
+                  : isFirstTokenPending
+                    ? "Confirm First Asset Approval..."
+                    : "Swap"}
         </Button>
       </div>
     </main>
